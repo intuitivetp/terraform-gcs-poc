@@ -1,0 +1,41 @@
+name: Gemini Dispatch
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+
+jobs:
+  dispatch:
+    if: contains(github.event.comment.body, '@gemini-cli')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Determine command
+        id: command
+        run: |
+          COMMENT="${{ github.event.comment.body }}"
+          if echo "$COMMENT" | grep -q "/review"; then
+            echo "workflow=pr-review" >> $GITHUB_OUTPUT
+          elif echo "$COMMENT" | grep -q "/triage"; then
+            echo "workflow=issue-triage" >> $GITHUB_OUTPUT
+          elif echo "$COMMENT" | grep -q "/generate-tests"; then
+            echo "workflow=test-generation" >> $GITHUB_OUTPUT
+          else
+            echo "workflow=assistant" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Trigger workflow
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: ${{ steps.command.outputs.workflow }}
+          client-payload: '{"comment_id": "${{ github.event.comment.id }}", "issue_number": "${{ github.event.issue.number }}"}'

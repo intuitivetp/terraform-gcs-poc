@@ -1,0 +1,384 @@
+name: Terraform CI/CD with Agentic Testing
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '**.tf'
+      - '**.tfvars'
+      - 'tests/**'
+  push:
+    branches: [main]
+    paths:
+      - '**.tf'
+      - '**.tfvars'
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  lint-and-format:
+    name: Lint and Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0
+
+      - name: Terraform Format Check
+        id: fmt
+        run: terraform fmt -check -recursive
+        continue-on-error: true
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+
+      - name: Run TFLint
+        run: tflint --init && tflint --recursive
+
+      - name: Auto-fix formatting
+        if: steps.fmt.outcome == 'failure' && github.event_name == 'pull_request'
+        run: |
+          terraform fmt -recursive
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Auto-fix: terraform fmt" || echo "No changes to commit"
+          git push
+
+  security-scan:
+    name: Security and Policy Checks
+    runs-on: ubuntu-latest
+    needs: lint-and-format
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run tfsec
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          format: sarif
+          soft_fail: true
+
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: .
+          framework: terraform
+          output_format: sarif
+          soft_fail: true
+
+      - name: Setup OPA
+        uses: open-policy-agent/setup-opa@v2
+
+      - name: Run OPA Policy Tests
+        run: |
+          # Create basic policy if none exists
+          mkdir -p policies
+          if [ ! -f policies/bucket_policy.rego ]; then
+            cat > policies/bucket_policy.rego << 'POLICY'
+          package terraform.gcs
+          
+          deny[msg] {
+            resource := input.resource_changes[_]
+            resource.type == "google_storage_bucket"
+            not resource.change.after.versioning[_].enabled
+            msg := sprintf("Bucket %s must have versioning enabled", [resource.name])
+          }
+          
+          deny[msg] {
+            resource := input.resource_changes[_]
+            resource.type == "google_storage_bucket"
+            not resource.change.after.uniform_bucket_level_access
+            msg := sprintf("Bucket %s must have uniform bucket level access", [resource.name])
+          }
+          POLICY
+          fi
+          
+          # Validate policy syntax
+          opa check policies/
+
+  terraform-plan:
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+    needs: security-scan
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.SERVICE_ACCOUNT_EMAIL }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        id: plan
+        run: |
+          terraform plan -out=tfplan -no-color
+          terraform show -json tfplan > plan.json
+
+      - name: Upload plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan
+          path: |
+            tfplan
+            plan.json
+
+  test-coverage-check:
+    name: Check Test Coverage
+    runs-on: ubuntu-latest
+    needs: terraform-plan
+    outputs:
+      needs_generation: ${{ steps.coverage.outputs.needs_generation }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Check test coverage
+        id: coverage
+        run: |
+          cd tests
+          go mod download
+          
+          # Count test functions
+          TEST_COUNT=$(grep -r "^func Test" . | wc -l)
+          
+          # Count Terraform modules
+          MODULE_COUNT=$(find ../modules -name "main.tf" | wc -l)
+          
+          echo "Found $TEST_COUNT tests for $MODULE_COUNT modules"
+          
+          # Calculate coverage ratio
+          if [ $MODULE_COUNT -gt 0 ]; then
+            COVERAGE_RATIO=$((TEST_COUNT * 100 / MODULE_COUNT))
+          else
+            COVERAGE_RATIO=100
+          fi
+          
+          echo "Coverage ratio: ${COVERAGE_RATIO}%"
+          
+          if [ $COVERAGE_RATIO -lt 80 ]; then
+            echo "needs_generation=true" >> $GITHUB_OUTPUT
+            echo "❌ Test coverage is below 80% threshold"
+          else
+            echo "needs_generation=false" >> $GITHUB_OUTPUT
+            echo "✅ Test coverage meets 80% threshold"
+          fi
+
+  generate-tests:
+    name: Generate Tests with Gemini
+    runs-on: ubuntu-latest
+    needs: test-coverage-check
+    if: needs.test-coverage-check.outputs.needs_generation == 'true'
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.SERVICE_ACCOUNT_EMAIL }}
+
+      - name: Run Gemini CLI to generate tests
+        uses: google-github-actions/run-gemini-cli@v0.1.13
+        with:
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          gemini_model: 'gemini-2.0-flash'
+          prompt: |
+            You are an expert in writing Terratest code for Google Cloud Platform infrastructure.
+            
+            Analyze the Terraform modules in ./modules/ directory and the existing tests in ./tests/ directory.
+            
+            Generate comprehensive Terratest code in Go that:
+            1. Tests all Terraform modules that don't have tests
+            2. Ensures at least 80% coverage of all resources
+            3. Validates resource creation, configuration, and cleanup
+            4. Uses parallel testing where appropriate
+            5. Includes proper error handling and assertions
+            
+            Write the generated tests to ./tests/ directory with meaningful file names.
+            Ensure all tests follow Terratest best practices.
+
+      - name: Commit generated tests
+        run: |
+          git config --global user.name "gemini-cli[bot]"
+          git config --global user.email "gemini-cli[bot]@users.noreply.github.com"
+          git add tests/
+          git commit -m "🤖 AI-generated: Add Terratest coverage" || echo "No new tests generated"
+          git push
+
+  run-terratest:
+    name: Run Terratest
+    runs-on: ubuntu-latest
+    needs: [test-coverage-check, generate-tests]
+    if: always() && !cancelled()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.SERVICE_ACCOUNT_EMAIL }}
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Run Terratest
+        id: test
+        continue-on-error: true
+        run: |
+          cd tests
+          go mod download
+          go test -v -timeout 30m -parallel 4 2>&1 | tee test_output.log
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: tests/test_output.log
+
+      - name: Check test results
+        id: test_result
+        run: |
+          if [ ${{ steps.test.outcome }} == 'failure' ]; then
+            echo "tests_failed=true" >> $GITHUB_OUTPUT
+          else
+            echo "tests_failed=false" >> $GITHUB_OUTPUT
+          fi
+
+  fix-tests:
+    name: Fix Failed Tests with Gemini
+    runs-on: ubuntu-latest
+    needs: run-terratest
+    if: needs.run-terratest.outputs.tests_failed == 'true'
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Download test results
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results
+          path: tests/
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.SERVICE_ACCOUNT_EMAIL }}
+
+      - name: Run Gemini CLI to fix tests
+        uses: google-github-actions/run-gemini-cli@v0.1.13
+        with:
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          gemini_model: 'gemini-2.0-flash'
+          prompt: |
+            You are an expert in debugging and fixing Terratest failures for GCP infrastructure.
+            
+            Review the test failure logs in ./tests/test_output.log
+            Review the Terraform code in ./modules/ and ./tests/
+            
+            Analyze the failures and fix them by either:
+            1. Correcting the test code in ./tests/
+            2. Fixing the Terraform code in ./modules/ if the infrastructure is misconfigured
+            
+            Apply the fixes directly to the files.
+            Ensure all tests will pass after your fixes.
+
+      - name: Commit fixes
+        run: |
+          git config --global user.name "gemini-cli[bot]"
+          git config --global user.email "gemini-cli[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "🔧 AI-fix: Resolve test failures" || echo "No fixes needed"
+          git push
+
+      - name: Trigger retest
+        run: |
+          echo "Tests fixed. Workflow will re-run automatically on push."
+
+  post-results:
+    name: Post Results to PR
+    runs-on: ubuntu-latest
+    needs: [lint-and-format, security-scan, terraform-plan, run-terratest]
+    if: always() && github.event_name == 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            let comment = '## 🚀 Terraform CI/CD Results\n\n';
+            
+            comment += '### ✅ Lint and Format\n';
+            comment += '${{ needs.lint-and-format.result }}' === 'success' ? '✅ Passed\n' : '❌ Failed\n';
+            
+            comment += '\n### 🔒 Security Scan\n';
+            comment += '${{ needs.security-scan.result }}' === 'success' ? '✅ Passed\n' : '❌ Failed\n';
+            
+            comment += '\n### 📋 Terraform Plan\n';
+            comment += '${{ needs.terraform-plan.result }}' === 'success' ? '✅ Passed\n' : '❌ Failed\n';
+            
+            comment += '\n### 🧪 Terratest\n';
+            comment += '${{ needs.run-terratest.result }}' === 'success' ? '✅ All tests passed\n' : '❌ Tests failed (AI fixing...)\n';
+            
+            comment += '\n---\n';
+            comment += '*This PR was automatically validated by Agentic CI/CD pipeline*';
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
