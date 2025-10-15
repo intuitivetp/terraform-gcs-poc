@@ -20,12 +20,12 @@ provider "google" {
 module "test_bucket" {
   source = "./modules/gcs-bucket"
 
-  project_id          = var.project_id
-  bucket_name         = "test-bucket-${var.project_id}-${random_id.suffix.hex}"
-  location            = "US"
-  storage_class       = "STANDARD"
-  versioning_enabled  = true
-  lifecycle_age_days  = 30
+  project_id         = var.project_id
+  bucket_name        = "test-bucket-${var.project_id}-${random_id.suffix.hex}"
+  location           = "US"
+  storage_class      = "STANDARD"
+  versioning_enabled = true
+  lifecycle_age_days = 30
 
   labels = {
     environment = "test"
