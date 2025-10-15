@@ -88,14 +88,14 @@ jobs:
             cat > policies/bucket_policy.rego << 'POLICY'
           package terraform.gcs
           
-          deny[msg] {
+          deny contains msg if {
             resource := input.resource_changes[_]
             resource.type == "google_storage_bucket"
             not resource.change.after.versioning[_].enabled
             msg := sprintf("Bucket %s must have versioning enabled", [resource.name])
           }
           
-          deny[msg] {
+          deny contains msg if {
             resource := input.resource_changes[_]
             resource.type == "google_storage_bucket"
             not resource.change.after.uniform_bucket_level_access
