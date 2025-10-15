@@ -1,4 +1,4 @@
-name: Gemini Dispatch
+name: Gemini Assistant
 
 on:
   issue_comment:
@@ -7,11 +7,11 @@ on:
     types: [created]
 
 jobs:
-  dispatch:
+  respond:
     if: contains(github.event.comment.body, '@gemini-cli')
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
       pull-requests: write
       issues: write
     
@@ -19,23 +19,41 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Determine command
-        id: command
+      - name: Extract question
+        id: question
         run: |
           COMMENT="${{ github.event.comment.body }}"
-          if echo "$COMMENT" | grep -q "/review"; then
-            echo "workflow=pr-review" >> $GITHUB_OUTPUT
-          elif echo "$COMMENT" | grep -q "/triage"; then
-            echo "workflow=issue-triage" >> $GITHUB_OUTPUT
-          elif echo "$COMMENT" | grep -q "/generate-tests"; then
-            echo "workflow=test-generation" >> $GITHUB_OUTPUT
-          else
-            echo "workflow=assistant" >> $GITHUB_OUTPUT
-          fi
+          # Remove @gemini-cli and any command prefix
+          QUESTION=$(echo "$COMMENT" | sed 's/@gemini-cli//g' | sed 's/\/[a-z-]*//g' | xargs)
+          echo "question=$QUESTION" >> $GITHUB_OUTPUT
+          echo "issue_number=${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
 
-      - name: Trigger workflow
-        uses: peter-evans/repository-dispatch@v2
+      - name: Run Gemini CLI
+        id: gemini
+        uses: google-github-actions/run-gemini-cli@v0.1.13
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          event-type: ${{ steps.command.outputs.workflow }}
-          client-payload: '{"comment_id": "${{ github.event.comment.id }}", "issue_number": "${{ github.event.issue.number }}"}'
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          gemini_model: 'gemini-2.0-flash'
+          prompt: |
+            You are a helpful Terraform and GCP expert assistant.
+            
+            Context: This is a Terraform project for managing Google Cloud Storage buckets.
+            Review the codebase in the current directory if needed.
+            
+            User question: ${{ steps.question.outputs.question }}
+            
+            Please provide a clear, helpful, and technically accurate answer.
+            Include code examples if relevant.
+
+      - name: Comment response
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const geminiOutput = process.env.GEMINI_OUTPUT || 'Processing your request...';
+            
+            github.rest.issues.createComment({
+              issue_number: ${{ steps.question.outputs.issue_number }},
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🤖 Gemini Assistant Response\n\n**Question:** ${{ steps.question.outputs.question }}\n\n**Answer:**\n\n${geminiOutput}\n\n---\n*Powered by Gemini AI*`
+            });
