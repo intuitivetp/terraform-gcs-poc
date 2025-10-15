@@ -10,6 +10,7 @@ variable "region" {
   default     = "us-central1"
 }
 
+# tflint-ignore: terraform_unused_declarations
 variable "bucket_name" {
   description = "Optional custom bucket name. If not provided, will be auto-generated."
   type        = string

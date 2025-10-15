@@ -1,3 +1,14 @@
+# Provider configuration
+terraform {
+  required_version = ">= 1.0"
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 5.0"
+    }
+  }
+}
+
 # GCS Bucket resource
 resource "google_storage_bucket" "bucket" {
   name          = var.bucket_name
