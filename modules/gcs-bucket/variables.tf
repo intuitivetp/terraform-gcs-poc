@@ -37,3 +37,9 @@ variable "labels" {
   type        = map(string)
   default     = {}
 }
+
+variable "log_bucket" {
+  description = "The bucket to store access logs (optional)"
+  type        = string
+  default     = ""
+}

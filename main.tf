@@ -26,6 +26,7 @@ module "test_bucket" {
   storage_class      = "STANDARD"
   versioning_enabled = true
   lifecycle_age_days = 30
+  log_bucket         = "logs-${var.project_id}"
 
   labels = {
     environment = "test"

@@ -19,6 +19,10 @@ resource "google_storage_bucket" "bucket" {
   uniform_bucket_level_access = true
   public_access_prevention    = "enforced"
 
+  logging {
+    log_bucket = var.log_bucket
+  }
+
   versioning {
     enabled = var.versioning_enabled
   }
