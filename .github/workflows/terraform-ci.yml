@@ -91,7 +91,7 @@ jobs:
           deny contains msg if {
             resource := input.resource_changes[_]
             resource.type == "google_storage_bucket"
-            not resource.change.after.versioning[_].enabled
+            not resource.change.after.versioning.enabled
             msg := sprintf("Bucket %s must have versioning enabled", [resource.name])
           }
           
