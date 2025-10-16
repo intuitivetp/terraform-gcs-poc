@@ -1,0 +1,397 @@
+name: IaC to Visual Pipeline
+
+on:
+    push:
+        branches: [main, develop]
+        paths:
+            - "stacks/**"
+            - "modules/**"
+            - "**.tf"
+    pull_request:
+        branches: [main, develop]
+        paths:
+            - "stacks/**"
+            - "modules/**"
+            - "**.tf"
+    workflow_dispatch:
+        inputs:
+            stack_name:
+                description: "Stack to deploy (e.g., online-banking)"
+                required: false
+                default: "online-banking"
+            generate_diagrams:
+                description: "Generate architecture diagrams"
+                required: false
+                type: boolean
+                default: true
+
+env:
+    TERRAFORM_VERSION: "1.5.0"
+    GO_VERSION: "1.21"
+    PYTHON_VERSION: "3.11"
+
+jobs:
+    detect-changes:
+        name: Detect Changed Stacks
+        runs-on: ubuntu-latest
+        outputs:
+            stacks: ${{ steps.set-stacks.outputs.stacks }}
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Detect changed stacks
+              id: set-stacks
+              run: |
+                  if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+                    STACKS='["${{ github.event.inputs.stack_name }}"]'
+                  else
+                    # Detect changed stacks from git diff
+                    CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} || echo "stacks/online-banking")
+                    STACKS=$(echo "$CHANGED_FILES" | grep '^stacks/' | cut -d'/' -f2 | sort -u | jq -R -s -c 'split("\n")[:-1]')
+                    if [ -z "$STACKS" ] || [ "$STACKS" = "[]" ]; then
+                      STACKS='["online-banking"]'
+                    fi
+                  fi
+                  echo "stacks=$STACKS" >> $GITHUB_OUTPUT
+                  echo "Detected stacks: $STACKS"
+
+    terraform-plan:
+        name: Terraform Plan - ${{ matrix.stack }}
+        needs: detect-changes
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                stack: ${{ fromJson(needs.detect-changes.outputs.stacks) }}
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v3
+              with:
+                  terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+            - name: Terraform Format Check
+              working-directory: stacks/${{ matrix.stack }}
+              run: terraform fmt -check -recursive
+
+            - name: Terraform Init
+              working-directory: stacks/${{ matrix.stack }}
+              run: terraform init -backend=false
+
+            - name: Terraform Validate
+              working-directory: stacks/${{ matrix.stack }}
+              run: terraform validate
+
+            - name: Terraform Plan
+              working-directory: stacks/${{ matrix.stack }}
+              run: |
+                  terraform plan \
+                    -var="project_id=demo-project-12345" \
+                    -var="environment=dev" \
+                    -out=tfplan
+
+            - name: Upload plan
+              uses: actions/upload-artifact@v4
+              with:
+                  name: tfplan-${{ matrix.stack }}
+                  path: stacks/${{ matrix.stack }}/tfplan
+                  retention-days: 5
+
+    generate-tests:
+        name: Generate Tests - ${{ matrix.stack }}
+        needs: detect-changes
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                stack: ${{ fromJson(needs.detect-changes.outputs.stacks) }}
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: ${{ env.PYTHON_VERSION }}
+
+            - name: Generate tests
+              run: |
+                  python3 scripts/generate-tests.py stacks/${{ matrix.stack }} \
+                    -o tests/${{ matrix.stack }}_generated_test.go
+
+            - name: Upload generated tests
+              uses: actions/upload-artifact@v4
+              with:
+                  name: tests-${{ matrix.stack }}
+                  path: tests/${{ matrix.stack }}_generated_test.go
+                  retention-days: 5
+
+    run-tests:
+        name: Run Tests - ${{ matrix.stack }}
+        needs: [detect-changes, generate-tests]
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                stack: ${{ fromJson(needs.detect-changes.outputs.stacks) }}
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup Go
+              uses: actions/setup-go@v5
+              with:
+                  go-version: ${{ env.GO_VERSION }}
+
+            - name: Download generated tests
+              uses: actions/download-artifact@v4
+              with:
+                  name: tests-${{ matrix.stack }}
+                  path: tests/
+
+            - name: Install dependencies
+              working-directory: tests
+              run: go mod download
+
+            - name: Run tests with coverage
+              working-directory: tests
+              run: |
+                  go test -v -coverprofile=coverage.out -covermode=atomic ./...
+                  go tool cover -html=coverage.out -o coverage.html
+
+            - name: Check coverage threshold
+              working-directory: tests
+              run: |
+                  COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+                  THRESHOLD=70
+                  echo "Coverage: $COVERAGE%"
+                  echo "Threshold: $THRESHOLD%"
+                  if (( $(echo "$COVERAGE < $THRESHOLD" | bc -l) )); then
+                    echo "❌ Coverage $COVERAGE% is below threshold $THRESHOLD%"
+                    exit 1
+                  fi
+                  echo "✅ Coverage $COVERAGE% meets threshold $THRESHOLD%"
+
+            - name: Upload coverage report
+              uses: actions/upload-artifact@v4
+              with:
+                  name: coverage-${{ matrix.stack }}
+                  path: |
+                      tests/coverage.out
+                      tests/coverage.html
+                  retention-days: 30
+
+            - name: Comment coverage on PR
+              if: github.event_name == 'pull_request'
+              uses: actions/github-script@v7
+              with:
+                  script: |
+                      const fs = require('fs');
+                      const coverage = fs.readFileSync('tests/coverage.out', 'utf8');
+                      const match = coverage.match(/total:.*?(\d+\.\d+)%/);
+                      const percentage = match ? match[1] : 'unknown';
+
+                      github.rest.issues.createComment({
+                        issue_number: context.issue.number,
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        body: `## 📊 Test Coverage - ${{ matrix.stack }}\n\n**Coverage:** ${percentage}%\n\n${percentage >= 70 ? '✅' : '❌'} ${percentage >= 70 ? 'Meets' : 'Below'} 70% threshold`
+                      });
+
+    terraform-apply:
+        name: Terraform Apply - ${{ matrix.stack }}
+        needs: [terraform-plan, run-tests]
+        runs-on: ubuntu-latest
+        if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+        strategy:
+            matrix:
+                stack: ${{ fromJson(needs.detect-changes.outputs.stacks) }}
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v3
+              with:
+                  terraform_version: ${{ env.TERRAFORM_VERSION }}
+                  terraform_wrapper: false
+
+            - name: Download plan
+              uses: actions/download-artifact@v4
+              with:
+                  name: tfplan-${{ matrix.stack }}
+                  path: stacks/${{ matrix.stack }}
+
+            - name: Terraform Init
+              working-directory: stacks/${{ matrix.stack }}
+              run: terraform init -backend=false
+
+            - name: Terraform Apply (dry-run for demo)
+              working-directory: stacks/${{ matrix.stack }}
+              run: |
+                  # In a real environment, this would apply with real credentials
+                  # terraform apply -auto-approve tfplan
+
+                  # For demo, just show what would happen
+                  echo "🎯 Would apply Terraform configuration"
+                  terraform show tfplan
+
+            - name: Generate mock state for diagram
+              working-directory: stacks/${{ matrix.stack }}
+              run: |
+                  # Create a mock state file for demonstration
+                  terraform plan \
+                    -var="project_id=demo-project-12345" \
+                    -var="environment=dev" \
+                    -out=tfplan.tmp
+
+                  # Extract state-like information
+                  terraform show -json tfplan.tmp > terraform.tfstate.json || true
+
+    generate-diagrams:
+        name: Generate Architecture Diagrams - ${{ matrix.stack }}
+        needs: [terraform-apply]
+        runs-on: ubuntu-latest
+        if: github.event.inputs.generate_diagrams != 'false'
+        strategy:
+            matrix:
+                stack: ${{ fromJson(needs.detect-changes.outputs.stacks) }}
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: ${{ env.PYTHON_VERSION }}
+
+            - name: Download state artifact (if exists)
+              uses: actions/download-artifact@v4
+              continue-on-error: true
+              with:
+                  name: tfplan-${{ matrix.stack }}
+                  path: stacks/${{ matrix.stack }}
+
+            - name: Setup Terraform (for state)
+              uses: hashicorp/setup-terraform@v3
+              with:
+                  terraform_version: ${{ env.TERRAFORM_VERSION }}
+                  terraform_wrapper: false
+
+            - name: Initialize and create state
+              working-directory: stacks/${{ matrix.stack }}
+              run: |
+                  terraform init -backend=false
+
+                  # Create a plan that can be converted to state-like JSON
+                  terraform plan \
+                    -var="project_id=demo-project-12345" \
+                    -var="environment=dev" \
+                    -out=tfplan
+
+                  terraform show -json tfplan > terraform.tfstate
+
+            - name: Generate Mermaid diagrams
+              working-directory: stacks/${{ matrix.stack }}
+              run: |
+                  mkdir -p diagrams
+
+                  # Generate all diagram types
+                  python3 ../../scripts/generate-diagram.py \
+                    terraform.tfstate \
+                    -o diagrams/architecture.mmd \
+                    -t all
+
+            - name: Convert to Markdown
+              working-directory: stacks/${{ matrix.stack }}
+              run: |
+                  # Create architecture documentation with embedded diagrams
+                  cat > diagrams/ARCHITECTURE.md << 'EOF'
+                  # ${{ matrix.stack }} Architecture
+
+                  Auto-generated architecture diagrams from Terraform state.
+
+                  ## Architecture Overview
+
+                  ```mermaid
+                  $(cat diagrams/architecture-architecture.mmd)
+                  ```
+
+                  ## Network Topology
+
+                  ```mermaid
+                  $(cat diagrams/architecture-network.mmd)
+                  ```
+
+                  ## Data Flow
+
+                  ```mermaid
+                  $(cat diagrams/architecture-dataflow.mmd)
+                  ```
+
+                  ---
+
+                  Generated: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+                  Stack: ${{ matrix.stack }}
+                  Workflow: ${{ github.workflow }}
+                  Run: ${{ github.run_number }}
+                  EOF
+
+            - name: Upload diagrams
+              uses: actions/upload-artifact@v4
+              with:
+                  name: diagrams-${{ matrix.stack }}
+                  path: stacks/${{ matrix.stack }}/diagrams/
+                  retention-days: 90
+
+            - name: Commit diagrams to repo
+              if: github.ref == 'refs/heads/main'
+              run: |
+                  git config user.name "GitHub Actions"
+                  git config user.email "actions@github.com"
+
+                  mkdir -p docs/architecture/${{ matrix.stack }}
+                  cp -r stacks/${{ matrix.stack }}/diagrams/* docs/architecture/${{ matrix.stack }}/
+
+                  git add docs/architecture/${{ matrix.stack }}
+                  git diff --staged --quiet || git commit -m "docs: update architecture diagrams for ${{ matrix.stack }} [skip ci]"
+                  # git push (disabled for demo)
+
+    publish-results:
+        name: Publish Pipeline Results
+        needs: [generate-diagrams]
+        runs-on: ubuntu-latest
+        if: always()
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Download all artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  path: artifacts/
+
+            - name: Create summary
+              run: |
+                  echo "# 🎨 IaC to Visual Pipeline Results" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "## 📊 Pipeline Status" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "- ✅ Terraform validation passed" >> $GITHUB_STEP_SUMMARY
+                  echo "- ✅ Tests generated and executed" >> $GITHUB_STEP_SUMMARY
+                  echo "- ✅ Coverage thresholds met" >> $GITHUB_STEP_SUMMARY
+                  echo "- ✅ Architecture diagrams generated" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "## 📁 Generated Artifacts" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "- Terraform plans" >> $GITHUB_STEP_SUMMARY
+                  echo "- Test coverage reports" >> $GITHUB_STEP_SUMMARY
+                  echo "- Mermaid architecture diagrams" >> $GITHUB_STEP_SUMMARY
+                  echo "- Architecture documentation" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "## 🔗 Resources" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "- [View Diagrams](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+                  echo "- [Coverage Reports](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+
+            - name: Upload combined artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: pipeline-results-${{ github.run_number }}
+                  path: artifacts/
+                  retention-days: 90

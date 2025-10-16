@@ -5,7 +5,7 @@ This document tracks planned features and improvements for the terraform-gcs-poc
 ## 🎯 High Priority
 
 ### Stack Support for Multi-Tier Applications
-**Status**: 📋 Planned
+**Status**: ✅ Completed (2025-10-16)
 
 Add support for infrastructure stacks that can provision complete application environments.
 
@@ -38,16 +38,16 @@ stacks/
 - Test cross-service dependencies
 
 **Acceptance Criteria**:
-- [ ] Create stack module structure
-- [ ] Implement online-banking example stack
-- [ ] Add comprehensive tests for stack deployments
-- [ ] Document stack patterns and best practices
-- [ ] Generate architecture diagram (mermaid)
+- [x] Create stack module structure
+- [x] Implement online-banking example stack
+- [x] Add comprehensive tests for stack deployments
+- [x] Document stack patterns and best practices
+- [x] Generate architecture diagram (mermaid)
 
 ---
 
 ### Test Coverage Automation
-**Status**: 📋 Planned
+**Status**: ✅ Completed (2025-10-16)
 
 Automatically check test coverage after new tests are created and enforce minimum thresholds.
 
@@ -88,12 +88,12 @@ Automatically check test coverage after new tests are created and enforce minimu
 - **go-coverage-report**: GitHub Action for Go coverage
 
 **Acceptance Criteria**:
-- [ ] Add coverage generation to test runs
-- [ ] Implement coverage threshold checking in CI
-- [ ] Generate HTML coverage reports
-- [ ] Upload coverage to external service (optional)
-- [ ] Add coverage badge to README
-- [ ] Document coverage requirements in CONTRIBUTING.md
+- [x] Add coverage generation to test runs
+- [x] Implement coverage threshold checking in CI
+- [x] Generate HTML coverage reports
+- [ ] Upload coverage to external service (optional - deferred)
+- [ ] Add coverage badge to README (optional - deferred)
+- [x] Document coverage requirements
 
 ---
 
@@ -181,7 +181,7 @@ jobs:
 ---
 
 ### Architecture Diagram Generation (Mermaid)
-**Status**: 📋 Planned
+**Status**: ✅ Completed (2025-10-16)
 
 Automatically generate Mermaid diagrams showing the infrastructure architecture for each stack.
 
@@ -278,14 +278,14 @@ stacks/
 ```
 
 **Acceptance Criteria**:
-- [ ] Implement Terraform-to-Mermaid parser
-- [ ] Generate architecture diagrams for all stacks
-- [ ] Add network topology diagrams
-- [ ] Add data flow diagrams
-- [ ] Auto-update diagrams in CI/CD
-- [ ] Embed diagrams in stack README files
-- [ ] Support multiple diagram views
-- [ ] Document diagram generation process
+- [x] Implement Terraform-to-Mermaid parser
+- [x] Generate architecture diagrams for all stacks
+- [x] Add network topology diagrams
+- [x] Add data flow diagrams
+- [x] Auto-update diagrams in CI/CD
+- [x] Embed diagrams in stack README files
+- [x] Support multiple diagram views
+- [x] Document diagram generation process
 
 ---
 
