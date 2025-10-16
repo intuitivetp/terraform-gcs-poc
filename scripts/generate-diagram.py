@@ -82,18 +82,34 @@ class TerraformStateParser:
         self.resources: Dict[str, Resource] = {}
         
     def parse(self) -> Dict[str, Resource]:
-        """Parse the state file"""
+        """Parse the state file (supports both state and plan JSON formats)"""
         with open(self.state_file) as f:
             state = json.load(f)
         
-        # Extract resources from state
-        for resource in state.get("resources", []):
-            self._parse_resource(resource)
+        # Check if this is a plan JSON (from terraform show -json tfplan)
+        if "planned_values" in state:
+            # This is a plan JSON format
+            root_module = state.get("planned_values", {}).get("root_module", {})
+            resources = root_module.get("resources", [])
+            
+            for resource in resources:
+                self._parse_plan_resource(resource)
+        elif "values" in state:
+            # This is a state JSON format  
+            root_module = state.get("values", {}).get("root_module", {})
+            resources = root_module.get("resources", [])
+            
+            for resource in resources:
+                self._parse_resource(resource)
+        else:
+            # Legacy format
+            for resource in state.get("resources", []):
+                self._parse_resource(resource)
         
         return self.resources
     
     def _parse_resource(self, resource_data: Dict):
-        """Parse a single resource"""
+        """Parse a single resource from state format"""
         resource_type = resource_data.get("type", "")
         resource_name = resource_data.get("name", "")
         resource_mode = resource_data.get("mode", "managed")
@@ -114,6 +130,27 @@ class TerraformStateParser:
             )
             
             self.resources[address] = resource
+    
+    def _parse_plan_resource(self, resource_data: Dict):
+        """Parse a single resource from plan format"""
+        resource_type = resource_data.get("type", "")
+        resource_name = resource_data.get("name", "")
+        address = resource_data.get("address", f"{resource_type}.{resource_name}")
+        resource_mode = resource_data.get("mode", "managed")
+        
+        if resource_mode != "managed":
+            return
+        
+        resource = Resource(
+            type=resource_type,
+            name=resource_name,
+            address=address,
+            provider=resource_data.get("provider_name", ""),
+            attributes=resource_data.get("values", {}),
+            dependencies=[]
+        )
+        
+        self.resources[address] = resource
 
 
 class MermaidGenerator:

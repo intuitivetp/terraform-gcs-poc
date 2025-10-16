@@ -409,34 +409,74 @@ jobs:
                   # Initialize without backend
                   terraform init -backend=false
                   
-                  # Generate plan JSON for diagram generation
-                  terraform plan \
-                    -var="project_id=mock-project-12345" \
-                    -var="environment=mock" \
-                    -out=tfplan 2>/dev/null || echo "Plan may have warnings"
+                  # Generate plan JSON for diagram generation (allow warnings but not errors)
+                  echo "📝 Running terraform plan..."
+                  if terraform plan -var="project_id=mock-project-12345" -var="environment=mock" -out=tfplan; then
+                    echo "✅ Plan succeeded"
+                  else
+                    PLAN_EXIT=$?
+                    echo "⚠️  Plan exited with code $PLAN_EXIT (may be warnings)"
+                  fi
                   
-                  # Convert plan to JSON (this gives us resource graph)
-                  terraform show -json tfplan > terraform.tfstate.json 2>/dev/null || {
-                    echo "⚠️  Could not generate plan JSON, creating minimal mock state"
-                    # Create a minimal mock state structure
-                    cat > terraform.tfstate.json << 'MOCKSTATE'
-                  {
-                    "format_version": "1.0",
-                    "terraform_version": "1.5.0",
-                    "values": {
-                      "root_module": {
-                        "resources": []
+                  # Convert plan to JSON if plan file exists
+                  if [ -f "tfplan" ]; then
+                    echo "📊 Converting plan to JSON..."
+                    terraform show -json tfplan > terraform.tfstate.json
+                    
+                    # Verify we have resources
+                    RESOURCE_COUNT=$(cat terraform.tfstate.json | python3 -c "import sys, json; data=json.load(sys.stdin); print(len(data.get('planned_values', {}).get('root_module', {}).get('resources', [])))" 2>/dev/null || echo "0")
+                    echo "Found $RESOURCE_COUNT resources in plan"
+                    
+                    if [ "$RESOURCE_COUNT" -eq 0 ]; then
+                      echo "⚠️  No resources found in plan"
+                    fi
+                  else
+                    echo "❌ No plan file generated, using configuration-only state"
+                    # Parse Terraform files to create a mock state
+                    python3 << 'PYTHON_MOCK'
+                  import json
+                  import re
+                  from pathlib import Path
+                  
+                  resources = []
+                  for tf_file in Path('.').glob('*.tf'):
+                      content = tf_file.read_text()
+                      # Find all resource blocks
+                      pattern = r'resource\s+"([^"]+)"\s+"([^"]+)"'
+                      matches = re.findall(pattern, content)
+                      for resource_type, resource_name in matches:
+                          resources.append({
+                              "address": f"{resource_type}.{resource_name}",
+                              "mode": "managed",
+                              "type": resource_type,
+                              "name": resource_name,
+                              "provider_name": "google",
+                              "schema_version": 0,
+                              "values": {},
+                              "depends_on": []
+                          })
+                  
+                  state = {
+                      "format_version": "1.0",
+                      "terraform_version": "1.5.0",
+                      "values": {
+                          "root_module": {
+                              "resources": resources
+                          }
                       }
-                    },
-                    "configuration": {
-                      "root_module": {}
-                    }
                   }
-                  MOCKSTATE
-                  }
+                  
+                  with open('terraform.tfstate.json', 'w') as f:
+                      json.dump(state, f, indent=2)
+                  
+                  print(f"Created mock state with {len(resources)} resources from Terraform files")
+                  PYTHON_MOCK
+                  fi
                   
                   echo "✅ Mock state generated for diagram visualization"
                   ls -lh terraform.tfstate.json
+                  echo "📋 State preview:"
+                  head -20 terraform.tfstate.json
 
             - name: Upload mock state JSON
               uses: actions/upload-artifact@v4
@@ -481,33 +521,24 @@ jobs:
                   
                   if [ -f "terraform.tfstate.json" ]; then
                       echo "📊 Generating diagrams from Terraform state..."
-                      python3 ../../scripts/generate-diagram.py \
+                      
+                      # Run diagram generator
+                      if python3 ../../scripts/generate-diagram.py \
                         terraform.tfstate.json \
                         -o diagrams/architecture.mmd \
-                        -t all || {
-                          echo "⚠️  Diagram generation had issues, creating placeholder"
-                          mkdir -p diagrams
-                          cat > diagrams/architecture.mmd << 'PLACEHOLDER'
-                  graph TB
-                      START[Infrastructure Stack] --> RESOURCES[Resources to be visualized]
-                      RESOURCES --> END[Diagram generation pending]
-                      
-                      style START fill:#4285f4,stroke:#333,color:#fff
-                      style END fill:#34a853,stroke:#333,color:#fff
-                  PLACEHOLDER
-                        }
-                      echo "✅ Diagrams generated"
+                        -t all; then
+                        echo "✅ Diagrams generated successfully"
+                        
+                        # List generated files
+                        echo "📁 Generated diagram files:"
+                        ls -lh diagrams/*.mmd
+                      else
+                        echo "⚠️  Diagram generation had issues"
+                        exit 1
+                      fi
                   else
-                      echo "⚠️  No state file found, creating placeholder"
-                      mkdir -p diagrams
-                      cat > diagrams/architecture.mmd << 'PLACEHOLDER'
-                  graph TB
-                      START[Infrastructure Stack] --> CONFIG[Review Terraform Configuration]
-                      CONFIG --> APPLY[Run Terraform Apply]
-                      APPLY --> DIAGRAMS[Auto-generate Diagrams]
-                      
-                      style START fill:#fbbc04,stroke:#333,color:#000
-                  PLACEHOLDER
+                      echo "❌ No state file found"
+                      exit 1
                   fi
 
             - name: 🤖 Gemini Self-Heal - Diagram Generation
@@ -522,32 +553,79 @@ jobs:
                   echo "  - Generate alternative diagram formats"
 
             - name: Create documentation
+              if: steps.diagrams.outcome == 'success'
               working-directory: stacks/${{ matrix.stack }}
               run: |
                   # Create timestamp
                   TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
                   
-                  cat > diagrams/ARCHITECTURE.md << DOCEOF
+                  # Read diagram contents (script generates files with -type suffix)
+                  ARCH_DIAGRAM=$(cat diagrams/architecture-architecture.mmd 2>/dev/null || echo "graph TB\n    TODO[Diagram generation pending]")
+                  NET_DIAGRAM=$(cat diagrams/architecture-network.mmd 2>/dev/null || echo "graph LR\n    TODO[Network diagram pending]")
+                  DATA_DIAGRAM=$(cat diagrams/architecture-dataflow.mmd 2>/dev/null || echo "graph TD\n    TODO[Data flow diagram pending]")
+                  
+                  cat > diagrams/ARCHITECTURE.md << 'DOCEOF'
                   # ${{ matrix.stack }} Architecture
                   
                   Auto-generated architecture diagrams from Terraform configuration.
                   
                   ## Architecture Overview
                   
-                  \`\`\`mermaid
-                  $(cat diagrams/architecture.mmd 2>/dev/null || echo "graph TB; TODO[Diagram generation pending]")
-                  \`\`\`
+                  Complete infrastructure visualization showing all resources and their relationships.
+                  
+                  ```mermaid
+                  ARCH_DIAGRAM_PLACEHOLDER
+                  ```
+                  
+                  ## Network Topology
+                  
+                  Network flow and connectivity between components.
+                  
+                  ```mermaid
+                  NET_DIAGRAM_PLACEHOLDER
+                  ```
+                  
+                  ## Data Flow
+                  
+                  Data movement and processing paths through the system.
+                  
+                  ```mermaid
+                  DATA_DIAGRAM_PLACEHOLDER
+                  ```
                   
                   ---
                   
-                  **Generated**: ${TIMESTAMP}  
+                  **Generated**: TIMESTAMP_PLACEHOLDER  
                   **Stack**: ${{ matrix.stack }}  
                   **Workflow**: ${{ github.workflow }}  
                   **Run**: ${{ github.run_number }}  
                   **Commit**: ${{ github.sha }}
                   DOCEOF
                   
-                  echo "✅ Documentation created"
+                  # Replace placeholders (using sed for multi-line content)
+                  python3 << 'PYTHON_DOC'
+                  import re
+                  
+                  with open('diagrams/ARCHITECTURE.md', 'r') as f:
+                      content = f.read()
+                  
+                  with open('diagrams/architecture-architecture.mmd', 'r') as f:
+                      arch = f.read()
+                  with open('diagrams/architecture-network.mmd', 'r') as f:
+                      net = f.read()
+                  with open('diagrams/architecture-dataflow.mmd', 'r') as f:
+                      data = f.read()
+                  
+                  content = content.replace('ARCH_DIAGRAM_PLACEHOLDER', arch)
+                  content = content.replace('NET_DIAGRAM_PLACEHOLDER', net)
+                  content = content.replace('DATA_DIAGRAM_PLACEHOLDER', data)
+                  content = content.replace('TIMESTAMP_PLACEHOLDER', '${TIMESTAMP}')
+                  
+                  with open('diagrams/ARCHITECTURE.md', 'w') as f:
+                      f.write(content)
+                  
+                  print("✅ Documentation created with all diagrams embedded")
+                  PYTHON_DOC
 
             - name: 📝 Commit Diagrams to Repository
               id: commit
