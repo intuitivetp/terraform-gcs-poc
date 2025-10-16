@@ -336,6 +336,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test-coverage-check, generate-tests]
     if: always() && !cancelled()
+    outputs:
+      tests_failed: ${{ steps.test_result.outputs.tests_failed }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -352,6 +354,11 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.21'
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0
 
       - name: Run Terratest
         id: test
