@@ -67,7 +67,7 @@ resource "google_logging_project_sink" "banking_logs" {
   name        = "${var.environment}-banking-logs-sink"
   destination = "logging.googleapis.com/projects/${var.project_id}/locations/global/buckets/_Default"
   filter      = "labels.application=\"online-banking\" AND labels.environment=\"${var.environment}\""
-  
+
   unique_writer_identity = true
 }
 

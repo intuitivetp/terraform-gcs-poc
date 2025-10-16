@@ -6,16 +6,16 @@ resource "google_storage_bucket" "frontend" {
   name          = "${var.project_id}-${var.environment}-banking-frontend"
   location      = var.region
   force_destroy = var.environment != "prod"
-  
+
   uniform_bucket_level_access = true
-  
+
   labels = var.labels
-  
+
   website {
     main_page_suffix = "index.html"
     not_found_page   = "404.html"
   }
-  
+
   cors {
     origin          = ["*"]
     method          = ["GET", "HEAD"]
@@ -64,7 +64,7 @@ resource "google_storage_bucket_object" "index" {
       </body>
     </html>
   EOT
-  
+
   content_type = "text/html"
 }
 

@@ -11,24 +11,24 @@ resource "google_service_account" "backend" {
 resource "google_cloud_run_service" "api" {
   name     = "${var.environment}-banking-api"
   location = var.region
-  
+
   template {
     spec {
       service_account_name = google_service_account.backend.email
-      
+
       containers {
-        image = "gcr.io/cloudrun/hello"  # Placeholder image
-        
+        image = "gcr.io/cloudrun/hello" # Placeholder image
+
         env {
           name  = "ENVIRONMENT"
           value = var.environment
         }
-        
+
         env {
           name  = "DATABASE_CONNECTION_NAME"
           value = var.database_connection_name
         }
-        
+
         resources {
           limits = {
             cpu    = "1000m"
@@ -37,16 +37,16 @@ resource "google_cloud_run_service" "api" {
         }
       }
     }
-    
+
     metadata {
       labels = var.labels
       annotations = {
-        "autoscaling.knative.dev/maxScale" = "10"
+        "autoscaling.knative.dev/maxScale"      = "10"
         "run.googleapis.com/cloudsql-instances" = var.database_connection_name
       }
     }
   }
-  
+
   traffic {
     percent         = 100
     latest_revision = true
