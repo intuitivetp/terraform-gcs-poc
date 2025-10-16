@@ -22,3 +22,4 @@ func TestBuggyBucketConfiguration(t *testing.T) {
 	// Fixed: Expect no error
 	assert.NoError(t, err)
 }
+```
