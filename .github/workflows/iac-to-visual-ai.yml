@@ -146,22 +146,30 @@ jobs:
                     -out=tfplan
               continue-on-error: true
             
-            - name: Convert Plan to JSON
-              if: steps.plan.outcome == 'success'
+            - name: Terraform Apply
+              id: apply
+              if: steps.plan.outcome == 'success' && steps.auth.outcome == 'success'
               working-directory: stacks/${{ matrix.stack }}
               run: |
-                  terraform show -json tfplan > tfplan.json
-                  echo "✅ Plan converted to JSON for diagram generation"
+                  echo "🚀 Applying Terraform changes..."
+                  terraform apply -auto-approve tfplan
+                  echo "✅ Infrastructure deployed"
+              continue-on-error: true
+            
+            - name: Export State to JSON
+              if: steps.apply.outcome == 'success'
+              working-directory: stacks/${{ matrix.stack }}
+              run: |
+                  terraform show -json > terraform.tfstate.json
+                  echo "✅ State exported to JSON for diagram generation"
 
-            - name: Upload plan and JSON
-              if: steps.plan.outcome == 'success'
+            - name: Upload state JSON
+              if: steps.apply.outcome == 'success'
               uses: actions/upload-artifact@v4
               with:
-                  name: tfplan-${{ matrix.stack }}
-                  path: |
-                      stacks/${{ matrix.stack }}/tfplan
-                      stacks/${{ matrix.stack }}/tfplan.json
-                  retention-days: 5
+                  name: tfstate-${{ matrix.stack }}
+                  path: stacks/${{ matrix.stack }}/terraform.tfstate.json
+                  retention-days: 30
 
             - name: 🤖 Gemini Self-Heal - Terraform Issues
               if: steps.plan.outcome == 'failure' && steps.validate.outcome == 'failure' && (github.event.inputs.enable_self_heal != 'false')
@@ -341,10 +349,10 @@ jobs:
         steps:
             - uses: actions/checkout@v4
 
-            - name: Download plan JSON
+            - name: Download state JSON
               uses: actions/download-artifact@v4
               with:
-                  name: tfplan-${{ matrix.stack }}
+                  name: tfstate-${{ matrix.stack }}
                   path: stacks/${{ matrix.stack }}/
               continue-on-error: true
 
@@ -359,53 +367,21 @@ jobs:
               run: |
                   mkdir -p diagrams
                   
-                  if [ -f "tfplan.json" ]; then
-                      echo "📊 Generating diagrams from Terraform plan..."
+                  if [ -f "terraform.tfstate.json" ]; then
+                      echo "📊 Generating diagrams from Terraform state..."
                       python3 ../../scripts/generate-diagram.py \
-                        tfplan.json \
+                        terraform.tfstate.json \
                         -o diagrams/architecture.mmd \
                         -t all
-                      echo "✅ Diagrams generated successfully"
+                      echo "✅ Diagrams generated from actual infrastructure state"
                   else
-                      echo "⚠️  No plan JSON found - creating setup instructions"
-                      cat > diagrams/README.md <<'DIAGRAM_EOF'
-# Architecture Diagrams
-
-## Setup Required
-
-To generate diagrams, configure these GitHub secrets:
-
-### 1. GCP_CREDENTIALS
-Service account JSON key with Storage Object Admin role
-
-### 2. GCP_PROJECT_ID  
-Your GCP project ID
-
-### 3. TF_STATE_BUCKET (optional)
-GCS bucket name for Terraform state (default: terraform-state-iac-to-visual)
-
-## Setup Instructions
-
-Create service account and grant permissions:
-- Create: gcloud iam service-accounts create terraform-ci
-- Grant: Storage Object Admin role  
-- Download JSON key
-- Add as GCP_CREDENTIALS secret in GitHub
-
-Create state bucket (if needed):
-- gsutil mb gs://terraform-state-iac-to-visual
-- gsutil versioning set on gs://terraform-state-iac-to-visual
-
-## Generated Output
-
-Once configured, the workflow generates:
-- Architecture diagrams (component relationships)
-- Network topology (connectivity)
-- Data flow patterns
-
-All diagrams use Mermaid format for GitHub markdown.
-DIAGRAM_EOF
-                      echo "📝 Created setup instructions"
+                      echo "⚠️  No state file found"
+                      echo "This means terraform apply was not run (possibly due to missing credentials)"
+                      echo "Diagrams require actual infrastructure state from terraform apply"
+                      
+                      mkdir -p diagrams
+                      echo "# Setup GCP credentials to generate diagrams" > diagrams/README.md
+                      echo "Configure GCP_CREDENTIALS, GCP_PROJECT_ID, and TF_STATE_BUCKET secrets" >> diagrams/README.md
                   fi
               continue-on-error: true
 
