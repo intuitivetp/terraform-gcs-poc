@@ -84,14 +84,16 @@ class TestGenerator:
     def _generate_integration_test(self, resources: Dict[str, List[str]]) -> str:
         """Generate main integration test"""
         resource_count = sum(len(names) for names in resources.values())
+        stack_name_camel = self._to_camel_case(self.stack_name)
+        output_assertions = self._generate_output_assertions()
         
-        return f'''func Test{self._to_camel_case(self.stack_name)}StackDeployment(t *testing.T) {{
+        return f'''func Test{stack_name_camel}StackDeployment(t *testing.T) {{
 \tt.Parallel()
 
 \t// Setup Terraform options
 \tterraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{{
 \t\tTerraformDir: "../stacks/{self.stack_name}",
-\t\tVars: map[string]interface{}{{
+\t\tVars: map[string]interface{{}}{{
 \t\t\t"project_id":  "test-project",
 \t\t\t"environment": "dev",
 \t\t}},
@@ -112,7 +114,7 @@ class TestGenerator:
 \tterraform.Apply(t, terraformOptions)
 
 \t// Verify outputs exist
-\t{self._generate_output_assertions()}
+\t{output_assertions}
 }}'''
     
     def _generate_output_assertions(self) -> str:
@@ -135,7 +137,7 @@ class TestGenerator:
 
 \tterraformOptions := &terraform.Options{{
 \t\tTerraformDir: "../stacks/{self.stack_name}",
-\t\tVars: map[string]interface{}{{
+\t\tVars: map[string]interface{{}}{{
 \t\t\t"project_id":  "test-project",
 \t\t\t"environment": "dev",
 \t\t}},
