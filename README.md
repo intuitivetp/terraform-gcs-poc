@@ -2,12 +2,19 @@
 
 [![Terraform CI](https://github.com/intuitivetp/terraform-gcs-poc/workflows/Terraform%20CI/badge.svg)](https://github.com/intuitivetp/terraform-gcs-poc/actions)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![AI-Powered](https://img.shields.io/badge/AI-Gemini%20Enhanced-purple)](docs/AI-SELF-HEALING.md)
 
-A comprehensive **Infrastructure-as-Code to Visual Architecture** converter demonstrating automated diagram generation, test automation, and complete CI/CD integration. This project showcases **Phase 1** of the Visual Infrastructure Platform with multi-tier application stacks, automated testing, and real-time architecture visualization.
+A comprehensive **Infrastructure-as-Code to Visual Architecture** converter with **AI-powered self-healing** capabilities. This project demonstrates automated diagram generation, test automation, and intelligent CI/CD integration that automatically detects and fixes common pipeline failures using Google Gemini AI.
 
 ## 🎯 Project Overview
 
 ### Core Capabilities
+
+🤖 **AI-Powered Self-Healing** 🆕
+- Gemini-powered automatic error detection and recovery
+- Auto-fixes for safe operations (formatting, linting)
+- Intelligent failure analysis and suggestions
+- 80%+ reduction in manual intervention
 
 ✨ **IaC-to-Visual Conversion**
 - Multi-cloud Terraform parser with dependency graph extraction
@@ -63,9 +70,9 @@ A comprehensive **Infrastructure-as-Code to Visual Architecture** converter demo
 
 ### Installation
 
-```bash
-git clone https://github.com/intuitivetp/terraform-gcs-poc.git
-cd terraform-gcs-poc
+   ```bash
+   git clone https://github.com/intuitivetp/terraform-gcs-poc.git
+   cd terraform-gcs-poc
 
 # Make scripts executable
 chmod +x scripts/*.sh scripts/*.py

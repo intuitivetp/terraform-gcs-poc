@@ -1,0 +1,141 @@
+name: "Gemini Self-Heal"
+description: "AI-powered self-healing for CI/CD pipeline failures"
+author: "Platform Engineering Team"
+
+inputs:
+    error_context:
+        description: "Context of the error (terraform, python, test, etc.)"
+        required: true
+    error_message:
+        description: "The error message to analyze"
+        required: true
+    file_path:
+        description: "Path to the file with the issue"
+        required: false
+        default: ""
+    google_api_key:
+        description: "Google API Key for Gemini"
+        required: true
+    auto_fix:
+        description: "Automatically apply suggested fixes"
+        required: false
+        default: "false"
+
+outputs:
+    suggestion:
+        description: "AI-generated fix suggestion"
+        value: ${{ steps.analyze.outputs.suggestion }}
+    fixed:
+        description: "Whether the issue was automatically fixed"
+        value: ${{ steps.analyze.outputs.fixed }}
+
+runs:
+    using: "composite"
+    steps:
+        - name: Setup Python
+          uses: actions/setup-python@v5
+          with:
+              python-version: "3.11"
+
+        - name: Install dependencies
+          shell: bash
+          run: |
+              pip install -q google-generativeai
+
+        - name: Analyze error with Gemini
+          id: analyze
+          shell: bash
+          env:
+              GOOGLE_API_KEY: ${{ inputs.google_api_key }}
+              ERROR_CONTEXT: ${{ inputs.error_context }}
+              ERROR_MESSAGE: ${{ inputs.error_message }}
+              FILE_PATH: ${{ inputs.file_path }}
+              AUTO_FIX: ${{ inputs.auto_fix }}
+          run: |
+              python3 << 'PYTHON_SCRIPT'
+              import os
+              import sys
+              import json
+              try:
+                  import google.generativeai as genai
+                  
+                  # Configure Gemini
+                  api_key = os.environ.get('GOOGLE_API_KEY')
+                  if not api_key:
+                      print("⚠️  GOOGLE_API_KEY not set, using fallback analysis")
+                      print("💡 Fallback: Check syntax, formatting, and common patterns")
+                      sys.exit(0)
+                  
+                  genai.configure(api_key=api_key)
+                  model = genai.GenerativeModel('gemini-1.5-pro')
+                  
+                  # Build prompt
+                  context = os.environ.get('ERROR_CONTEXT', 'unknown')
+                  error_msg = os.environ.get('ERROR_MESSAGE', '')
+                  file_path = os.environ.get('FILE_PATH', '')
+                  
+                  prompt = f"""You are an expert DevOps engineer analyzing a CI/CD pipeline failure.
+              
+              Context: {context}
+              Error: {error_msg}
+              File: {file_path}
+              
+              Analyze this error and provide:
+              1. Root cause analysis
+              2. Specific fix recommendation
+              3. Code snippet to fix the issue (if applicable)
+              4. Prevention strategy for future
+              
+              Format your response as JSON:
+              {{
+                  "root_cause": "...",
+                  "fix": "...",
+                  "code_snippet": "...",
+                  "prevention": "..."
+              }}
+              """
+                  
+                  # Generate response
+                  print("🤖 Consulting Gemini AI...")
+                  response = model.generate_content(prompt)
+                  
+                  try:
+                      result = json.loads(response.text)
+                      print(f"\n📋 Root Cause: {result.get('root_cause', 'N/A')}")
+                      print(f"\n🔧 Fix: {result.get('fix', 'N/A')}")
+                      if result.get('code_snippet'):
+                          print(f"\n💻 Code Snippet:\n{result['code_snippet']}")
+                      print(f"\n🛡️  Prevention: {result.get('prevention', 'N/A')}")
+                      
+                      # Output for GitHub Actions
+                      with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+                          f.write(f"suggestion={result.get('fix', 'No suggestion')}\n")
+                          f.write(f"fixed=false\n")
+                      
+                  except json.JSONDecodeError:
+                      print(f"\n🤖 Gemini Response:\n{response.text}")
+                      with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+                          f.write(f"suggestion=See console output\n")
+                          f.write(f"fixed=false\n")
+                  
+              except ImportError:
+                  print("⚠️  google-generativeai not installed, using fallback")
+                  print("💡 Install with: pip install google-generativeai")
+              except Exception as e:
+                  print(f"❌ Error during Gemini analysis: {e}")
+                  import traceback
+                  traceback.print_exc()
+              PYTHON_SCRIPT
+
+        - name: Apply auto-fix (if enabled)
+          if: inputs.auto_fix == 'true' && inputs.file_path != ''
+          shell: bash
+          run: |
+              echo "🔧 Auto-fix is enabled but manual review recommended"
+              echo "💡 Suggestion: ${{ steps.analyze.outputs.suggestion }}"
+              echo "⚠️  Auto-fixing would require code modification - skipping for safety"
+
+branding:
+    icon: "zap"
+    color: "purple"
+
