@@ -1,4 +1,3 @@
-```go
 package test
 
 import (
@@ -41,4 +40,3 @@ func TestGCSBucketIAM(t *testing.T) {
 	iamBindingID := terraform.Output(t, terraformOptions, "google_project_iam_binding_id")
 	assert.NotEmpty(t, iamBindingID)
 }
-```

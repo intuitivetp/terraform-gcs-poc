@@ -1,4 +1,3 @@
-```go
 package test
 
 import (
@@ -45,4 +44,3 @@ func TestGCSBucketNotification(t *testing.T) {
 	notificationID := terraform.Output(t, terraformOptions, "notification_id")
 	assert.NotEmpty(t, notificationID)
 }
-```

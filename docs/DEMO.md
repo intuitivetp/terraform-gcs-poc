@@ -148,22 +148,34 @@ git push origin main
 ### Pipeline Steps
 
 1. **Detect Changes**: Identifies modified stacks
-2. **Terraform Plan**: Validates configuration
-3. **Generate Tests**: Creates test suite automatically
+2. **Terraform Validate & Plan**: Validates configuration and generates plan
+3. **Generate Tests**: Creates test suite automatically based on coverage analysis
 4. **Run Tests**: Executes tests with coverage
-5. **Terraform Apply**: Deploys infrastructure (demo mode)
-6. **Generate Diagrams**: Creates architecture visuals
-7. **Publish Results**: Uploads artifacts and documentation
+5. **Heal Tests**: AI-powered test failure analysis and automatic healing
+6. **Mock Terraform Apply**: Generates mock state for safe diagram generation (no real deployment)
+7. **Generate Diagrams**: Creates architecture visuals from mock state
+8. **Commit Diagrams**: Saves diagrams to repository as versioned artifacts
+9. **Publish Results**: Uploads artifacts and documentation
 
 ### View Results
 
 1. Navigate to **Actions** tab in GitHub
 2. Click on the workflow run
-3. Download artifacts:
-   - `diagrams-online-banking`: Architecture diagrams
-   - `coverage-online-banking`: Test coverage reports
+3. View committed diagrams in `stacks/*/diagrams/` directory
+4. Download artifacts:
+   - `diagrams-online-banking`: Architecture diagrams (also in repo)
+   - `coverage-online-banking`: Test coverage reports with healing logs
    - `tests-online-banking`: Generated test files
+   - `tfstate-online-banking`: Mock Terraform state
    - `pipeline-results-<run>`: Complete results
+
+### AI Self-Healing Features
+
+The pipeline includes **Gemini-powered self-healing** that:
+- Analyzes test failures and suggests fixes
+- Generates additional tests for coverage gaps
+- Heals broken tests automatically (where safe)
+- Provides intelligent error analysis
 
 ## 📊 Success Criteria Validation
 
