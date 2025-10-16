@@ -25,3 +25,5 @@ resource "google_storage_bucket_lifecycle_rule" "delete_incomplete_uploads" {
     age = 7
   }
 }
+
+
