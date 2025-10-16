@@ -27,12 +27,36 @@ resource "google_storage_bucket" "bucket" {
     enabled = var.versioning_enabled
   }
 
+  # Basic lifecycle rule (existing)
   lifecycle_rule {
     condition {
       age = var.lifecycle_age_days
     }
     action {
       type = "Delete"
+    }
+  }
+
+  # Advanced lifecycle rule 1: Archive old versions
+  lifecycle_rule {
+    action {
+      type          = "SetStorageClass"
+      storage_class = "ARCHIVE"
+    }
+    condition {
+      age                   = 90
+      with_state            = "ARCHIVED"
+      matches_storage_class = ["STANDARD"]
+    }
+  }
+
+  # Advanced lifecycle rule 2: Delete incomplete uploads
+  lifecycle_rule {
+    action {
+      type = "AbortIncompleteMultipartUpload"
+    }
+    condition {
+      age = 7
     }
   }
 
