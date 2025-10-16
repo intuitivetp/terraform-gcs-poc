@@ -406,12 +406,22 @@ jobs:
               run: |
                   echo "🎭 Generating mock Terraform state for diagram generation..."
                   
-                  # Initialize without backend
-                  terraform init -backend=false
+                  # Remove any backend configuration to avoid state locking issues
+                  if [ -f "backend.tf" ]; then
+                    echo "🗑️  Removing backend.tf to prevent remote state access"
+                    rm backend.tf
+                  fi
                   
-                  # Generate plan JSON for diagram generation (allow warnings but not errors)
+                  # Initialize without backend (local state only)
+                  terraform init -backend=false -reconfigure
+                  
+                  # Generate plan JSON for diagram generation (no locking needed)
                   echo "📝 Running terraform plan..."
-                  if terraform plan -var="project_id=mock-project-12345" -var="environment=mock" -out=tfplan; then
+                  if terraform plan \
+                    -var="project_id=mock-project-12345" \
+                    -var="environment=mock" \
+                    -lock=false \
+                    -out=tfplan; then
                     echo "✅ Plan succeeded"
                   else
                     PLAN_EXIT=$?
