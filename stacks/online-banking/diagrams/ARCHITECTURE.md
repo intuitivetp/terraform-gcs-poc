@@ -9,9 +9,14 @@ Complete infrastructure visualization showing all resources and their relationsh
 ```mermaid
 graph TB
 
+    subgraph Other
+        google_project_service_required_apis[🔧 Required_Apis]
+    end
+
     %% Dependencies
 
     %% Styling
+    style google_project_service_required_apis fill:#607d8b,stroke:#333,color:#fff
 ```
 
 ## Network Topology
@@ -62,5 +67,5 @@ graph TD
 **Generated**: ${TIMESTAMP}  
 **Stack**: online-banking  
 **Workflow**: IaC to Visual Pipeline (AI-Enhanced)  
-**Run**: 16  
-**Commit**: 6889a65290736b637d76639a7bd238e9c1158d7c
+**Run**: 17  
+**Commit**: 6c8bee047b418138aace35bb5fe4e1876d7a36f0
