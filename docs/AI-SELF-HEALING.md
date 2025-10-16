@@ -124,6 +124,27 @@ Actions → IaC to Visual Pipeline (AI-Enhanced) → Run workflow
   ✓ Enable Gemini self-healing on failures
 ```
 
+### AI PR Review
+
+The workflow automatically reviews PRs:
+
+```bash
+# Automatic on PR creation
+# Or trigger manually in comments:
+@gemini-cli /review
+```
+
+### Gemini Assistant
+
+Ask questions in issues or PRs:
+
+```bash
+# In any issue or PR comment:
+@gemini-cli How do I add a new stack?
+@gemini-cli What's the test coverage requirement?
+@gemini-cli Explain the diagram generation process
+```
+
 ### Disable Self-Healing
 
 ```bash
