@@ -22,6 +22,12 @@ files_joined = "\n\n".join(files_blob)
 prompt_template = """
 You are an expert in fixing Terratest (Go) tests for Terraform on GCP.
 
+PROJECT CONTEXT (authoritative):
+- Valid GCP project id used by this repo: devops-sandbox-452616 (from GEMINI.md).
+- Prefer making tests succeed by correcting invalid inputs (e.g., wrong project_id) over asserting failures.
+- If a failure shows 'Unknown project id' or similar, update any test vars to use devops-sandbox-452616 instead of expecting an error.
+- Keep the original test intent (success path) unless a test is explicitly defined as a negative test.
+
 - The following is the failing test log (trimmed). Identify concrete root causes and propose minimal edits.
 - Only fix issues that clearly cause the failures (e.g., wrong variables passed to module, missing defer Destroy, wrong assertions, wrong module vars).
 - Do NOT introduce new dependencies. Keep tests simple and deterministic.

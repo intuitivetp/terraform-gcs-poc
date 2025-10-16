@@ -10,15 +10,15 @@ func TestBuggyBucketConfiguration(t *testing.T) {
 	terraformOptions := &terraform.Options{
 		TerraformDir: "../modules/gcs-bucket",
 		Vars: map[string]interface{}{
-			"project_id":  "wrong-project-id-12345",  // BUG 1: Wrong project ID
+			"project_id":  "devops-sandbox-452616",  // Fixed: Correct project ID
 			"bucket_name": "test-bucket-bug",
 		},
-		ExpectErrors: []string{"*Error applying plan*"},
+		//ExpectErrors: []string{"*Error applying plan*"}, // Removed: ExpectErrors is not a valid field
 	}
 
-	defer terraform.Destroy(t, terraformOptions) // BUG 2: Missing defer terraform.Destroy() - resource leak!
+	defer terraform.Destroy(t, terraformOptions)
 	_, err := terraform.InitAndApplyE(t, terraformOptions)
 
-	// BUG 3: Wrong assertion - will fail
-	assert.Error(t, err) // Wrong expectation
+	// Fixed: Expect no error
+	assert.NoError(t, err)
 }
