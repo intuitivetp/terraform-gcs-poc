@@ -1,3 +1,0 @@
-# github.com/intuitivetp/terraform-gcs-poc/tests
-gcs_bucket_iam_test.go:1:1: expected 'package', found ``
-FAIL	github.com/intuitivetp/terraform-gcs-poc/tests [setup failed]
