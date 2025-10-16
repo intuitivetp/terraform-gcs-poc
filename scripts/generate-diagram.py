@@ -313,6 +313,16 @@ def main():
     resources = parser_obj.parse()
     print(f"Found {len(resources)} resources")
     
+    if len(resources) == 0:
+        print("⚠️  WARNING: No resources found in state file!")
+        print("This could mean:")
+        print("  1. Terraform plan had no resources to create")
+        print("  2. State file format is not recognized")
+        print("  3. Resources are in an unexpected location in the JSON")
+        print("")
+        print("Generating minimal placeholder diagrams...")
+        print("")
+    
     # Generate diagram
     generator = MermaidGenerator(resources)
     

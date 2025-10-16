@@ -437,43 +437,124 @@ jobs:
                     echo "📊 Converting plan to JSON..."
                     terraform show -json tfplan > terraform.tfstate.json
                     
-                    # Verify we have resources
+                    # Verify we have resources and show structure
+                    echo "🔍 Analyzing plan JSON structure..."
+                    python3 << 'PYTHON_ANALYZE'
+                  import json
+                  import sys
+                  
+                  with open('terraform.tfstate.json', 'r') as f:
+                      data = json.load(f)
+                  
+                  # Check for resources in different locations
+                  planned_resources = data.get('planned_values', {}).get('root_module', {}).get('resources', [])
+                  config_resources = data.get('configuration', {}).get('root_module', {}).get('resources', [])
+                  
+                  print(f"📊 Plan JSON Analysis:")
+                  print(f"  - Planned resources: {len(planned_resources)}")
+                  print(f"  - Config resources: {len(config_resources)}")
+                  print(f"  - Top-level keys: {list(data.keys())}")
+                  
+                  if planned_resources:
+                      print(f"  - First planned resource: {planned_resources[0].get('type', 'unknown')}.{planned_resources[0].get('name', 'unknown')}")
+                  elif config_resources:
+                      print(f"  - First config resource: {config_resources[0].get('type', 'unknown')}")
+                  
+                  # If no planned resources, try to extract from configuration
+                  if not planned_resources and config_resources:
+                      print("⚠️  No planned resources, extracting from configuration...")
+                      # Convert configuration to planned_values format
+                      converted_resources = []
+                      for res in config_resources:
+                          converted_resources.append({
+                              "address": f"{res.get('type', 'unknown')}.{res.get('name', 'unknown')}",
+                              "mode": res.get('mode', 'managed'),
+                              "type": res.get('type', ''),
+                              "name": res.get('name', ''),
+                              "provider_name": res.get('provider_config_key', 'google'),
+                              "values": res.get('expressions', {})
+                          })
+                      
+                      # Update the JSON to add planned_values
+                      if 'planned_values' not in data:
+                          data['planned_values'] = {}
+                      if 'root_module' not in data['planned_values']:
+                          data['planned_values']['root_module'] = {}
+                      data['planned_values']['root_module']['resources'] = converted_resources
+                      
+                      with open('terraform.tfstate.json', 'w') as f:
+                          json.dump(data, f, indent=2)
+                      
+                      print(f"✅ Converted {len(converted_resources)} resources from configuration to planned_values")
+                  
+                  PYTHON_ANALYZE
+                    
+                    # Re-check resource count after conversion
                     RESOURCE_COUNT=$(cat terraform.tfstate.json | python3 -c "import sys, json; data=json.load(sys.stdin); print(len(data.get('planned_values', {}).get('root_module', {}).get('resources', [])))" 2>/dev/null || echo "0")
-                    echo "Found $RESOURCE_COUNT resources in plan"
+                    echo "📊 Final resource count: $RESOURCE_COUNT"
                     
                     if [ "$RESOURCE_COUNT" -eq 0 ]; then
-                      echo "⚠️  No resources found in plan"
+                      echo "⚠️  Still no resources found, trying fallback..."
                     fi
                   else
-                    echo "❌ No plan file generated, using configuration-only state"
-                    # Parse Terraform files to create a mock state
+                    echo "❌ No plan file generated"
+                    RESOURCE_COUNT=0
+                  fi
+                  
+                  # Fallback: Parse Terraform files if we have no resources
+                  if [ "$RESOURCE_COUNT" -eq 0 ]; then
+                    echo "🔄 Using fallback: parsing Terraform configuration files..."
                     python3 << 'PYTHON_MOCK'
                   import json
                   import re
                   from pathlib import Path
                   
                   resources = []
-                  for tf_file in Path('.').glob('*.tf'):
+                  print("📁 Scanning Terraform files...")
+                  
+                  for tf_file in Path('.').glob('**/*.tf'):
+                      if '.terraform' in str(tf_file):
+                          continue
+                      print(f"  - Parsing {tf_file}")
                       content = tf_file.read_text()
-                      # Find all resource blocks
-                      pattern = r'resource\s+"([^"]+)"\s+"([^"]+)"'
-                      matches = re.findall(pattern, content)
-                      for resource_type, resource_name in matches:
+                      
+                      # Find all resource blocks with better parsing
+                      pattern = r'resource\s+"([^"]+)"\s+"([^"]+)"\s*\{([^}]+(?:\{[^}]*\}[^}]*)*)\}'
+                      matches = re.finditer(pattern, content, re.MULTILINE | re.DOTALL)
+                      
+                      for match in matches:
+                          resource_type = match.group(1)
+                          resource_name = match.group(2)
+                          resource_body = match.group(3)
+                          
+                          # Extract some basic attributes
+                          values = {}
+                          
+                          # Try to extract name attribute
+                          name_match = re.search(r'name\s*=\s*"([^"]+)"', resource_body)
+                          if name_match:
+                              values['name'] = name_match.group(1)
+                          
                           resources.append({
                               "address": f"{resource_type}.{resource_name}",
                               "mode": "managed",
                               "type": resource_type,
                               "name": resource_name,
-                              "provider_name": "google",
-                              "schema_version": 0,
-                              "values": {},
-                              "depends_on": []
+                              "provider_name": "registry.terraform.io/hashicorp/google",
+                              "values": values
                           })
+                          print(f"    ✓ Found: {resource_type}.{resource_name}")
                   
+                  # Create proper plan JSON structure
                   state = {
                       "format_version": "1.0",
                       "terraform_version": "1.5.0",
-                      "values": {
+                      "planned_values": {
+                          "root_module": {
+                              "resources": resources
+                          }
+                      },
+                      "configuration": {
                           "root_module": {
                               "resources": resources
                           }
@@ -483,7 +564,7 @@ jobs:
                   with open('terraform.tfstate.json', 'w') as f:
                       json.dump(state, f, indent=2)
                   
-                  print(f"Created mock state with {len(resources)} resources from Terraform files")
+                  print(f"\n✅ Created mock state with {len(resources)} resources from Terraform files")
                   PYTHON_MOCK
                   fi
                   
