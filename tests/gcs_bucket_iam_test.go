@@ -38,7 +38,7 @@ func TestGCSBucketIAM(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Basic check to see if the IAM binding was created.  More detailed checks can be added.
-	iamBindingID := terraform.Output(t, terraformOptions, "iam_binding_id")
+	iamBindingID := terraform.Output(t, terraformOptions, "google_project_iam_binding_id")
 	assert.NotEmpty(t, iamBindingID)
 }
 ```
