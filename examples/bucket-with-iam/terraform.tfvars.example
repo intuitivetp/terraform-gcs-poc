@@ -1,0 +1,25 @@
+# Copy this file to terraform.tfvars and fill in your values
+
+project_id         = "your-gcp-project-id"
+region             = "us-central1"
+bucket_name_prefix = "data-bucket"
+location           = "US"
+environment        = "development"
+
+# Grant read access to these identities
+reader_members = [
+  "serviceAccount:reader-app@your-project.iam.gserviceaccount.com",
+  "group:data-analysts@yourcompany.com"
+]
+
+# Grant write access to these identities
+writer_members = [
+  "serviceAccount:etl-pipeline@your-project.iam.gserviceaccount.com"
+]
+
+# Grant admin access to these identities
+admin_members = [
+  "user:admin@yourcompany.com",
+  "group:platform-engineering@yourcompany.com"
+]
+
