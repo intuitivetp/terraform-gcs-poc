@@ -448,7 +448,8 @@ jobs:
             total_chars += len(src)
             files_blob.append(f"===FILE: {p}===\n{src}")
 
-          prompt = f"""
+          files_joined = "\n\n".join(files_blob)
+          prompt_template = """
           You are an expert in fixing Terratest (Go) tests for Terraform on GCP.
 
           - The following is the failing test log (trimmed). Identify concrete root causes and propose minimal edits.
@@ -459,11 +460,12 @@ jobs:
           - If no change is needed for a file, do not output it.
 
           FAIL LOG (trimmed):
-          {log_text[:6000]}
+          {log_snip}
 
           CURRENT TEST FILES (trimmed):
-          {"\n\n".join(files_blob)}
+          {files_blob}
           """
+          prompt = prompt_template.format(log_snip=log_text[:6000], files_blob=files_joined)
 
           model = genai.GenerativeModel('gemini-2.0-flash')
           resp = model.generate_content(prompt, generation_config={'temperature': 0.2, 'max_output_tokens': 2048})
