@@ -25,26 +25,59 @@ jobs:
           COMMENT="${{ github.event.comment.body }}"
           # Remove @gemini-cli and any command prefix
           QUESTION=$(echo "$COMMENT" | sed "s/'//g" | sed 's/@gemini-cli//g' | sed 's/\/[a-z-]*//g' | xargs)
-
           echo "question=$QUESTION" >> $GITHUB_OUTPUT
           echo "issue_number=${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
 
-      - name: Run Gemini CLI
-        id: gemini
-        uses: google-github-actions/run-gemini-cli@v0.1.13
-        with:
-          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
-          gemini_model: 'gemini-2.0-flash'
-          prompt: |
-            You are a helpful Terraform and GCP expert assistant.
-            
-            Context: This is a Terraform project for managing Google Cloud Storage buckets.
-            Review the codebase in the current directory if needed.
-            
-            User question: ${{ steps.question.outputs.question }}
-            
-            Please provide a clear, helpful, and technically accurate answer.
-            Include code examples if relevant.
+      - name: Setup Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Install Gemini CLI
+        run: |
+          # Install the Gemini CLI tool directly
+          pip install google-generativeai
+
+      - name: Run Gemini and Capture Response
+        id: gemini_response
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          # Create a Python script to call Gemini
+          cat > gemini_query.py << 'PYTHON_SCRIPT'
+          import google.generativeai as genai
+          import os
+          import sys
+          
+          # Configure Gemini
+          genai.configure(api_key=os.environ['GEMINI_API_KEY'])
+          
+          # Get the question from command line
+          question = sys.argv[1] if len(sys.argv) > 1 else "Hello"
+          
+          # Create the prompt
+          prompt = f"""You are a helpful Terraform and GCP expert assistant.
+          
+          Context: This is a Terraform project for managing Google Cloud Storage buckets.
+          
+          User question: {question}
+          
+          Please provide a clear, helpful, and technically accurate answer.
+          Include code examples if relevant."""
+          
+          # Call Gemini
+          model = genai.GenerativeModel('gemini-2.0-flash-exp')
+          response = model.generate_content(prompt)
+          
+          # Print the response
+          print(response.text)
+          PYTHON_SCRIPT
+          
+          # Run the script and capture output
+          RESPONSE=$(python3 gemini_query.py "${{ steps.question.outputs.question }}")
+          
+          # Save to output using heredoc for multiline content
+          echo "response<<GEMINI_EOF" >> $GITHUB_OUTPUT
+          echo "$RESPONSE" >> $GITHUB_OUTPUT
+          echo "GEMINI_EOF" >> $GITHUB_OUTPUT
 
       - name: Debug - Show Gemini outputs
         run: |
@@ -72,22 +105,14 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            // Try multiple possible output locations
-            const geminiOutput = `${{ steps.gemini.outputs.response }}` || 
-                                 `${{ steps.gemini.outputs.text }}` || 
-                                 `${{ steps.gemini.outputs.content }}` ||
-                                 `${{ steps.gemini.outputs.output }}` ||
-                                 process.env.GEMINI_OUTPUT || 
-                                 process.env.GEMINI_RESPONSE || 
-                                 'Unable to retrieve response from Gemini. Check the workflow logs for debug information.';
+            const geminiOutput = `${{ steps.gemini_response.outputs.response }}`;
             
-            // Log for debugging (visible in workflow logs)
+            // Log for debugging
             console.log('=== Gemini Output Debug ===');
-            console.log('Raw output:', geminiOutput);
             console.log('Output length:', geminiOutput.length);
             
-            // Clean up the output if needed
-            const cleanOutput = geminiOutput.trim();
+            // Clean up the output
+            const cleanOutput = geminiOutput.trim() || 'No response received from Gemini';
             
             // Post the comment
             await github.rest.issues.createComment({
