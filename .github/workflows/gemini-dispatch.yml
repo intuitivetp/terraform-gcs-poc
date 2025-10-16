@@ -24,7 +24,8 @@ jobs:
         run: |
           COMMENT="${{ github.event.comment.body }}"
           # Remove @gemini-cli and any command prefix
-          QUESTION=$(echo "$COMMENT" | sed 's/@gemini-cli//g' | sed 's/\/[a-z-]*//g' | xargs)
+          QUESTION=$(echo "$COMMENT" | sed "s/'//g" | sed 's/@gemini-cli//g' | sed 's/\/[a-z-]*//g' | xargs)
+
           echo "question=$QUESTION" >> $GITHUB_OUTPUT
           echo "issue_number=${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
 
