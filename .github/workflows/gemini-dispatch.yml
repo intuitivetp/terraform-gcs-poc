@@ -25,7 +25,6 @@ jobs:
           COMMENT="${{ github.event.comment.body }}"
           # Remove @gemini-cli and any command prefix
           QUESTION=$(echo "$COMMENT" | sed "s/'//g" | sed 's/@gemini-cli//g' | sed 's/\/[a-z-]*//g' | xargs)
-
           echo "question=$QUESTION" >> $GITHUB_OUTPUT
           echo "issue_number=${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
 
@@ -46,15 +45,53 @@ jobs:
             Please provide a clear, helpful, and technically accurate answer.
             Include code examples if relevant.
 
+      - name: Debug - Show Gemini outputs
+        run: |
+          echo "=================================="
+          echo "DEBUG: Checking Gemini CLI outputs"
+          echo "=================================="
+          echo ""
+          echo "--- Step Outputs ---"
+          echo "steps.gemini.outputs.response: ${{ steps.gemini.outputs.response }}"
+          echo "steps.gemini.outputs.text: ${{ steps.gemini.outputs.text }}"
+          echo "steps.gemini.outputs.content: ${{ steps.gemini.outputs.content }}"
+          echo "steps.gemini.outputs.output: ${{ steps.gemini.outputs.output }}"
+          echo ""
+          echo "--- Environment Variables ---"
+          env | grep -i gemini || echo "(No GEMINI environment variables found)"
+          echo ""
+          echo "--- Current Directory Files ---"
+          ls -la
+          echo ""
+          echo "--- Check for output files ---"
+          find . -name "*gemini*" -o -name "*response*" -o -name "*.txt" 2>/dev/null || echo "(No output files found)"
+          echo "=================================="
+
       - name: Comment response
         uses: actions/github-script@v7
         with:
           script: |
-            const geminiOutput = process.env.GEMINI_OUTPUT || 'Processing your request...';
+            // Try multiple possible output locations
+            const geminiOutput = `${{ steps.gemini.outputs.response }}` || 
+                                 `${{ steps.gemini.outputs.text }}` || 
+                                 `${{ steps.gemini.outputs.content }}` ||
+                                 `${{ steps.gemini.outputs.output }}` ||
+                                 process.env.GEMINI_OUTPUT || 
+                                 process.env.GEMINI_RESPONSE || 
+                                 'Unable to retrieve response from Gemini. Check the workflow logs for debug information.';
             
-            github.rest.issues.createComment({
+            // Log for debugging (visible in workflow logs)
+            console.log('=== Gemini Output Debug ===');
+            console.log('Raw output:', geminiOutput);
+            console.log('Output length:', geminiOutput.length);
+            
+            // Clean up the output if needed
+            const cleanOutput = geminiOutput.trim();
+            
+            // Post the comment
+            await github.rest.issues.createComment({
               issue_number: ${{ steps.question.outputs.issue_number }},
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## 🤖 Gemini Assistant Response\n\n**Question:** ${{ steps.question.outputs.question }}\n\n**Answer:**\n\n${geminiOutput}\n\n---\n*Powered by Gemini AI*`
+              body: `## 🤖 Gemini Assistant Response\n\n**Question:** ${{ steps.question.outputs.question }}\n\n**Answer:**\n\n${cleanOutput}\n\n---\n*Powered by Gemini AI*`
             });
