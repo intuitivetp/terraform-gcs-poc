@@ -11,9 +11,11 @@ resource "google_storage_bucket" "documents" {
 
   labels = var.labels
 
-  encryption {
-    default_kms_key_name = null
-  }
+  # Encryption at rest (Google-managed by default)
+  # Uncomment to use customer-managed encryption keys:
+  # encryption {
+  #   default_kms_key_name = var.kms_key_name
+  # }
 
   versioning {
     enabled = var.environment == "prod"
