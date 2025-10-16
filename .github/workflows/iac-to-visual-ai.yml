@@ -174,7 +174,7 @@ jobs:
             - name: 🤖 Gemini Self-Heal - Terraform Issues
               if: steps.plan.outcome == 'failure' && steps.validate.outcome == 'failure' && (github.event.inputs.enable_self_heal != 'false')
               env:
-                  GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+                  GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
               run: |
                   echo "🤖 Analyzing Terraform validation errors with Gemini..."
                   echo "💡 Note: Plan errors due to missing credentials are expected in demo mode"
@@ -231,7 +231,7 @@ jobs:
             - name: 🤖 Gemini Self-Heal - Test Generation
               if: steps.generate.outcome == 'failure' && (github.event.inputs.enable_self_heal != 'false')
               env:
-                  GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+                  GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
               run: |
                   echo "🤖 Gemini analyzing test generation failure..."
                   python3 << 'PYTHON_SCRIPT'
@@ -330,7 +330,7 @@ jobs:
             - name: 🤖 Gemini Self-Heal - Test Coverage
               if: steps.coverage.outputs.coverage != '' && steps.coverage.outputs.coverage < '70'
               env:
-                  GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+                  GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
               run: |
                   echo "🤖 Coverage is ${{ steps.coverage.outputs.coverage }}%, analyzing gaps with Gemini..."
                   echo "💡 Gemini would suggest:"
@@ -388,7 +388,7 @@ jobs:
             - name: 🤖 Gemini Self-Heal - Diagram Generation
               if: steps.diagrams.outcome == 'failure' && (github.event.inputs.enable_self_heal != 'false')
               env:
-                  GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+                  GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
               run: |
                   echo "🤖 Analyzing diagram generation failure with Gemini..."
                   echo "💡 Gemini would:"
@@ -459,7 +459,7 @@ jobs:
 
             - name: AI Code Review
               env:
-                  GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+                  GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
                   PR_DIFF: ${{ steps.diff.outputs.diff_size }}
               run: |
                   echo "🤖 Performing AI-powered code review..."
@@ -549,7 +549,7 @@ jobs:
 
             - name: Ask Gemini
               env:
-                  GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+                  GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
                   QUESTION: ${{ steps.question.outputs.question }}
               run: |
                   python3 << 'PYTHON_SCRIPT'
@@ -619,7 +619,7 @@ jobs:
 
             - name: Generate AI-Enhanced Summary
               env:
-                  GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+                  GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
               run: |
                   echo "# 🎨 IaC to Visual Pipeline Results (AI-Enhanced)" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
@@ -692,7 +692,7 @@ jobs:
             - name: 🤖 Gemini Analysis Summary
               if: github.event.inputs.enable_self_heal != 'false'
               env:
-                  GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+                  GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
               run: |
                   echo "📈 Pipeline Insights"
                   echo "===================="
