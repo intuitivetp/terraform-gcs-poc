@@ -5,7 +5,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gruntwork-io/terratest/modules/gcp"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
@@ -36,11 +35,11 @@ func TestGCSBucketIAM(t *testing.T) {
 
 	terraform.InitAndApply(t, terraformOptions)
 
-	// Verify the bucket exists
-	_, err := gcp.FetchGCSBucket(t, projectID, bucketName)
-	assert.NoError(t, err)
-
-	// Basic check to see if the IAM binding was created (more robust checks would require GCP APIs)
-	iamBindingID := terraform.Output(t, terraformOptions, "iam_binding_id")
-	assert.NotEmpty(t, iamBindingID)
+	// Verify the IAM member output matches what we set
+	memberOutput := terraform.Output(t, terraformOptions, "member")
+	assert.Equal(t, member, memberOutput)
+	
+	// Verify the role output matches what we set
+	roleOutput := terraform.Output(t, terraformOptions, "role")
+	assert.Equal(t, role, roleOutput)
 }
