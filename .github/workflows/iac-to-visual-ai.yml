@@ -78,10 +78,18 @@ jobs:
         steps:
             - uses: actions/checkout@v4
 
+            - name: Authenticate to Google Cloud
+              id: auth
+              uses: google-github-actions/auth@v2
+              with:
+                  credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+              continue-on-error: true
+
             - name: Setup Terraform
               uses: hashicorp/setup-terraform@v3
               with:
                   terraform_version: ${{ env.TERRAFORM_VERSION }}
+                  terraform_wrapper: false
 
             - name: Terraform Format Check
               id: fmt
@@ -101,37 +109,49 @@ jobs:
                   git diff --staged --quiet || git commit -m "style: auto-format Terraform code [skip ci]"
 
             - name: Terraform Init
+              id: init
               working-directory: stacks/${{ matrix.stack }}
-              run: terraform init -backend=false
+              env:
+                  TF_STATE_BUCKET: ${{ secrets.TF_STATE_BUCKET || 'terraform-state-iac-to-visual' }}
+              run: |
+                  if [ "${{ steps.auth.outcome }}" == "success" ]; then
+                      echo "🔗 Configuring GCS backend..."
+                      cat > backend.tf << EOF
+                  terraform {
+                    backend "gcs" {
+                      bucket = "$TF_STATE_BUCKET"
+                      prefix = "stacks/${{ matrix.stack }}"
+                    }
+                  }
+                  EOF
+                      terraform init
+                  else
+                      echo "⚠️  No GCP credentials - using local backend"
+                      terraform init -backend=false
+                  fi
+              continue-on-error: true
 
             - name: Terraform Validate
               id: validate
               working-directory: stacks/${{ matrix.stack }}
               run: terraform validate
 
-            - name: Terraform Plan (Demo Mode)
+            - name: Terraform Plan
               id: plan
               working-directory: stacks/${{ matrix.stack }}
               run: |
-                  echo "ℹ️  Terraform Plan - Demo Mode (no real credentials)"
-                  echo "   For full plan execution, configure GCP credentials as secrets"
-                  echo ""
-                  echo "✅ Validation passed - configuration is syntactically correct"
-                  echo "✅ Test generation will proceed"
-                  echo "✅ Diagram generation will use code analysis"
-                  echo ""
-                  echo "💡 To enable real plan:"
-                  echo "   1. Add GCP_CREDENTIALS secret to repository"
-                  echo "   2. Uncomment authentication step in workflow"
-                  echo ""
-                  
-                  # Skip actual plan in demo mode - requires real credentials
-                  # Uncomment below when credentials are available:
-                  # terraform plan \
-                  #   -var="project_id=demo-project-12345" \
-                  #   -var="environment=dev" \
-                  #   -out=tfplan
+                  terraform plan \
+                    -var="project_id=${{ secrets.GCP_PROJECT_ID || 'demo-project-12345' }}" \
+                    -var="environment=dev" \
+                    -out=tfplan
               continue-on-error: true
+            
+            - name: Convert Plan to JSON
+              if: steps.plan.outcome == 'success'
+              working-directory: stacks/${{ matrix.stack }}
+              run: |
+                  terraform show -json tfplan > tfplan.json
+                  echo "✅ Plan converted to JSON for diagram generation"
 
             - name: Upload plan and JSON
               if: steps.plan.outcome == 'success'
@@ -321,37 +341,17 @@ jobs:
         steps:
             - uses: actions/checkout@v4
 
+            - name: Download plan JSON
+              uses: actions/download-artifact@v4
+              with:
+                  name: tfplan-${{ matrix.stack }}
+                  path: stacks/${{ matrix.stack }}/
+              continue-on-error: true
+
             - name: Setup Python
               uses: actions/setup-python@v5
               with:
                   python-version: ${{ env.PYTHON_VERSION }}
-
-            - name: Setup Terraform
-              uses: hashicorp/setup-terraform@v3
-              with:
-                  terraform_version: ${{ env.TERRAFORM_VERSION }}
-                  terraform_wrapper: false
-
-            - name: Initialize and create state (Demo Mode - Skipped)
-              working-directory: stacks/${{ matrix.stack }}
-              run: |
-                  echo "📊 Diagram Generation - Demo Mode"
-                  echo "ℹ️  Skipping terraform plan (requires GCP credentials)"
-                  echo ""
-                  echo "💡 In production mode:"
-                  echo "   1. Terraform plan creates tfplan"
-                  echo "   2. tfplan converted to JSON state"
-                  echo "   3. Diagrams generated from state"
-                  echo ""
-                  echo "⏭️  Skipping diagram generation in demo mode"
-                  
-                  # Uncomment below when credentials are available:
-                  # terraform init -backend=false
-                  # terraform plan \
-                  #   -var="project_id=demo-project-12345" \
-                  #   -var="environment=dev" \
-                  #   -out=tfplan
-                  # terraform show -json tfplan > terraform.tfstate
 
             - name: Generate Mermaid diagrams
               id: diagrams
@@ -359,61 +359,54 @@ jobs:
               run: |
                   mkdir -p diagrams
                   
-                  echo "📊 Creating diagram placeholder (demo mode)"
-                  
-                  # Create README explaining how to generate diagrams
-                  cat > diagrams/README.md << 'EOF'
+                  if [ -f "tfplan.json" ]; then
+                      echo "📊 Generating diagrams from Terraform plan..."
+                      python3 ../../scripts/generate-diagram.py \
+                        tfplan.json \
+                        -o diagrams/architecture.mmd \
+                        -t all
+                      echo "✅ Diagrams generated successfully"
+                  else
+                      echo "⚠️  No plan JSON found - creating setup instructions"
+                      cat > diagrams/README.md <<'DIAGRAM_EOF'
 # Architecture Diagrams
 
-## Demo Mode
+## Setup Required
 
-This workflow is running in **demo mode** without real GCP credentials.
+To generate diagrams, configure these GitHub secrets:
 
-Diagram generation requires:
-1. Valid GCP credentials (service account or OIDC)
-2. Terraform plan/apply to create state file
-3. State file parsing to extract resource relationships
+### 1. GCP_CREDENTIALS
+Service account JSON key with Storage Object Admin role
 
-## How to Enable
+### 2. GCP_PROJECT_ID  
+Your GCP project ID
 
-### Option 1: Add GCP Credentials Secret
-```yaml
-- name: Authenticate to GCP
-  uses: google-github-actions/auth@v2
-  with:
-    credentials_json: ${{ secrets.GCP_CREDENTIALS }}
-```
+### 3. TF_STATE_BUCKET (optional)
+GCS bucket name for Terraform state (default: terraform-state-iac-to-visual)
 
-### Option 2: Use OIDC (Recommended)
-```yaml
-- name: Authenticate to GCP
-  uses: google-github-actions/auth@v2
-  with:
-    workload_identity_provider: 'projects/PROJECT_ID/locations/global/...'
-    service_account: 'sa@project.iam.gserviceaccount.com'
-```
+## Setup Instructions
 
-### Manual Generation
+Create service account and grant permissions:
+- Create: gcloud iam service-accounts create terraform-ci
+- Grant: Storage Object Admin role  
+- Download JSON key
+- Add as GCP_CREDENTIALS secret in GitHub
 
-After running `terraform apply` locally:
-```bash
-cd stacks/online-banking
-python3 ../../scripts/generate-diagram.py \
-  terraform.tfstate \
-  -o diagrams/architecture.mmd \
-  -t all
-```
+Create state bucket (if needed):
+- gsutil mb gs://terraform-state-iac-to-visual
+- gsutil versioning set on gs://terraform-state-iac-to-visual
 
-## What Gets Generated
+## Generated Output
 
-- **Architecture Diagram**: Component relationships and dependencies
-- **Network Topology**: Network and connectivity visualization  
-- **Data Flow**: Data movement between resources
+Once configured, the workflow generates:
+- Architecture diagrams (component relationships)
+- Network topology (connectivity)
+- Data flow patterns
 
-All diagrams are in Mermaid format for easy embedding in markdown.
-EOF
-                  
-                  echo "✅ Created diagram placeholder"
+All diagrams use Mermaid format for GitHub markdown.
+DIAGRAM_EOF
+                      echo "📝 Created setup instructions"
+                  fi
               continue-on-error: true
 
             - name: 🤖 Gemini Self-Heal - Diagram Generation
