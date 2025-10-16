@@ -175,8 +175,10 @@ jobs:
             - name: Generate tests
               id: generate
               run: |
+                  # Convert stack name to Go-compatible filename (replace - with _)
+                  STACK_FILE=$(echo "${{ matrix.stack }}" | tr '-' '_')
                   python3 scripts/generate-tests.py stacks/${{ matrix.stack }} \
-                    -o tests/${{ matrix.stack }}_generated_test.go
+                    -o tests/${STACK_FILE}_generated_test.go
               continue-on-error: true
 
             - name: 🤖 Gemini Self-Heal - Test Generation
@@ -213,7 +215,7 @@ jobs:
               uses: actions/upload-artifact@v4
               with:
                   name: tests-${{ matrix.stack }}
-                  path: tests/${{ matrix.stack }}_generated_test.go
+                  path: tests/*_generated_test.go
                   retention-days: 5
 
     run-tests:

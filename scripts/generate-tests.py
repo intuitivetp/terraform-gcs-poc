@@ -191,7 +191,9 @@ def main():
     if args.output:
         output_file = args.output
     else:
-        output_file = Path("tests") / f"{args.stack_dir.name}_generated_test.go"
+        # Convert dashes to underscores for Go-compatible filenames
+        stack_name = args.stack_dir.name.replace("-", "_")
+        output_file = Path("tests") / f"{stack_name}_generated_test.go"
     
     output_file.parent.mkdir(parents=True, exist_ok=True)
     output_file.write_text(test_code)
