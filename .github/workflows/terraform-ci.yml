@@ -208,38 +208,127 @@ jobs:
           ref: ${{ github.head_ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
-          service_account: ${{ vars.SERVICE_ACCOUNT_EMAIL }}
+          python-version: '3.11'
 
-      - name: Run Gemini CLI to generate tests
-        uses: google-github-actions/run-gemini-cli@v0.1.13
-        with:
-          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
-          gemini_model: 'gemini-2.0-flash'
-          prompt: |
-            You are an expert in writing Terratest code for Google Cloud Platform infrastructure.
-            
-            Analyze the Terraform modules in ./modules/ directory and the existing tests in ./tests/ directory.
-            
-            Generate comprehensive Terratest code in Go that:
-            1. Tests all Terraform modules that don't have tests
-            2. Ensures at least 80% coverage of all resources
-            3. Validates resource creation, configuration, and cleanup
-            4. Uses parallel testing where appropriate
-            5. Includes proper error handling and assertions
-            
-            Write the generated tests to ./tests/ directory with meaningful file names.
-            Ensure all tests follow Terratest best practices.
+      - name: Install dependencies
+        run: |
+          pip install google-generativeai
+
+      - name: Generate tests with Gemini
+        timeout-minutes: 5
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          cat > generate_tests.py << 'PYTHON_SCRIPT'
+          import google.generativeai as genai
+          import os
+          import sys
+          
+          # Configure Gemini
+          genai.configure(api_key=os.environ['GEMINI_API_KEY'])
+          
+          # Create the prompt
+          prompt = """You are an expert in writing Terratest code for Google Cloud Platform infrastructure.
+
+          CONTEXT:
+          - Project: terraform-gcs-poc
+          - Existing tests: 2 tests in tests/gcs_bucket_test.go
+          - New modules needing tests:
+            1. modules/gcs-bucket-notification/ (Pub/Sub notifications)
+            2. modules/gcs-bucket-iam/ (IAM member management)
+          
+          TASK:
+          Generate TWO complete Terratest files in Go:
+          
+          1. tests/gcs_bucket_notification_test.go
+          2. tests/gcs_bucket_iam_test.go
+          
+          REQUIREMENTS:
+          - Use projectID: "devops-sandbox-452616"
+          - Include t.Parallel() for parallel testing
+          - Add defer terraform.Destroy() for cleanup
+          - Test basic resource creation only (keep it simple)
+          - Use proper imports and assertions
+          - Follow the pattern from existing tests
+          
+          OUTPUT FORMAT:
+          Return ONLY the Go code for each file, separated by:
+          ===FILE: filename.go===
+          
+          Example:
+          ===FILE: tests/gcs_bucket_notification_test.go===
+          package test
+          ...
+          ===FILE: tests/gcs_bucket_iam_test.go===
+          package test
+          ...
+          """
+          
+          # Call Gemini with shorter timeout
+          model = genai.GenerativeModel('gemini-2.0-flash-exp')
+          response = model.generate_content(
+              prompt,
+              generation_config={
+                  'temperature': 0.3,
+                  'max_output_tokens': 2048,
+              }
+          )
+          
+          # Parse and write files
+          content = response.text
+          files = {}
+          current_file = None
+          current_content = []
+          
+          for line in content.split('\n'):
+              if line.startswith('===FILE:'):
+                  if current_file:
+                      files[current_file] = '\n'.join(current_content)
+                  current_file = line.split('===FILE:')[1].split('===')[0].strip()
+                  current_content = []
+              elif current_file:
+                  current_content.append(line)
+          
+          if current_file and current_content:
+              files[current_file] = '\n'.join(current_content)
+          
+          # Write files
+          if not files:
+              print("No files generated, writing to output anyway")
+              sys.exit(1)
+          
+          for filename, content in files.items():
+              print(f"Writing {filename}")
+              with open(filename, 'w') as f:
+                  f.write(content)
+              print(f"✓ Created {filename}")
+          
+          print(f"\nGenerated {len(files)} test files successfully")
+          PYTHON_SCRIPT
+          
+          python3 generate_tests.py
+
+      - name: Verify generated files
+        run: |
+          echo "=== Generated test files ==="
+          ls -lh tests/*.go
+          echo ""
+          echo "=== File sizes ==="
+          wc -l tests/*.go
 
       - name: Commit generated tests
         run: |
           git config --global user.name "gemini-cli[bot]"
           git config --global user.email "gemini-cli[bot]@users.noreply.github.com"
           git add tests/
-          git commit -m "🤖 AI-generated: Add Terratest coverage" || echo "No new tests generated"
+          if git diff --staged --quiet; then
+            echo "No new tests generated"
+            exit 0
+          fi
+          git commit -m "🤖 AI-generated: Add Terratest coverage for notification and IAM modules"
           git push
 
   run-terratest:
