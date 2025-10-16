@@ -13,3 +13,5 @@ resource "google_storage_bucket_iam_member" "member" {
   role   = var.role
   member = var.member
 }
+
+
