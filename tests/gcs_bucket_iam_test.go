@@ -44,4 +44,3 @@ func TestGCSBucketIAM(t *testing.T) {
 	iamBindingID := terraform.Output(t, terraformOptions, "iam_binding_id")
 	assert.NotEmpty(t, iamBindingID)
 }
-```

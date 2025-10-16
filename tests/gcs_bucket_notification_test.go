@@ -45,5 +45,3 @@ func TestGCSBucketNotification(t *testing.T) {
 	_, err = gcp.GetPubSubTopic(t, projectID, topicName)
 	assert.NoError(t, err)
 }
-```
-```go

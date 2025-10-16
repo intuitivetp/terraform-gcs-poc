@@ -370,17 +370,20 @@ jobs:
       - name: Check test results
         id: test_result
         run: |
-          if [ ${{ steps.test.outcome }} == 'failure' ]; then
+          # Check the actual exit code, not the outcome (due to continue-on-error)
+          if grep -q "FAIL" tests/test_output.log; then
             echo "tests_failed=true" >> $GITHUB_OUTPUT
+            echo "❌ Tests failed - will trigger fix job"
           else
             echo "tests_failed=false" >> $GITHUB_OUTPUT
+            echo "✅ All tests passed"
           fi
 
   fix-tests:
     name: Fix Failed Tests with Gemini
     runs-on: ubuntu-latest
     needs: run-terratest
-    if: needs.run-terratest.outputs.tests_failed == 'true'
+    if: always() && needs.run-terratest.outputs.tests_failed == 'true'
     permissions:
       contents: write
       pull-requests: write
