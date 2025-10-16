@@ -13,12 +13,12 @@ func TestBuggyBucketConfiguration(t *testing.T) {
 			"project_id":  "wrong-project-id-12345",  // BUG 1: Wrong project ID
 			"bucket_name": "test-bucket-bug",
 		},
+		ExpectErrors: []string{"*Error applying plan*"},
 	}
 
-	// BUG 2: Missing defer terraform.Destroy() - resource leak!
-	terraform.InitAndApply(t, terraformOptions)
+	defer terraform.Destroy(t, terraformOptions) // BUG 2: Missing defer terraform.Destroy() - resource leak!
+	_, err := terraform.InitAndApplyE(t, terraformOptions)
 
 	// BUG 3: Wrong assertion - will fail
-	bucketName := terraform.Output(t, terraformOptions, "bucket_name")
-	assert.Equal(t, "expected-wrong-name", bucketName)  // Wrong expectation
+	assert.Error(t, err) // Wrong expectation
 }

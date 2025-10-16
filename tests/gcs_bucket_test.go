@@ -43,7 +43,7 @@ func TestGCSBucketCreation(t *testing.T) {
 	outputBucketURL := terraform.Output(t, terraformOptions, "bucket_url")
 
 	// Verify outputs are not empty
-	assert.NotEmpty(t, outputBucketName, "Bucket name should not be empty")
+	assert.Equal(t, bucketName, outputBucketName, "Bucket name should not be empty")
 	assert.NotEmpty(t, outputBucketURL, "Bucket URL should not be empty")
 
 

@@ -1,0 +1,1046 @@
+=== RUN   TestGCSBucketIAM
+=== PAUSE TestGCSBucketIAM
+=== RUN   TestGCSBucketNotification
+=== PAUSE TestGCSBucketNotification
+=== RUN   TestGCSBucketCreation
+=== PAUSE TestGCSBucketCreation
+=== RUN   TestGCSBucketWithCustomSettings
+=== PAUSE TestGCSBucketWithCustomSettings
+=== RUN   TestBuggyBucketConfiguration
+TestBuggyBucketConfiguration 2025-10-16T10:08:40Z retry.go:91: terraform [init -upgrade=false]
+TestBuggyBucketConfiguration 2025-10-16T10:08:40Z logger.go:66: Running command terraform with args [init -upgrade=false]
+TestBuggyBucketConfiguration 2025-10-16T10:08:40Z logger.go:66: 
+TestBuggyBucketConfiguration 2025-10-16T10:08:40Z logger.go:66: [0m[1mInitializing the backend...[0m
+TestBuggyBucketConfiguration 2025-10-16T10:08:40Z logger.go:66: 
+TestBuggyBucketConfiguration 2025-10-16T10:08:40Z logger.go:66: [0m[1mInitializing provider plugins...[0m
+TestBuggyBucketConfiguration 2025-10-16T10:08:40Z logger.go:66: - Finding hashicorp/google versions matching "~> 5.0"...
+TestBuggyBucketConfiguration 2025-10-16T10:08:40Z logger.go:66: - Installing hashicorp/google v5.45.2...
+TestBuggyBucketConfiguration 2025-10-16T10:08:41Z logger.go:66: - Installed hashicorp/google v5.45.2 (signed by HashiCorp)
+TestBuggyBucketConfiguration 2025-10-16T10:08:41Z logger.go:66: 
+TestBuggyBucketConfiguration 2025-10-16T10:08:41Z logger.go:66: Terraform has created a lock file [1m.terraform.lock.hcl[0m to record the provider
+TestBuggyBucketConfiguration 2025-10-16T10:08:41Z logger.go:66: selections it made above. Include this file in your version control repository
+TestBuggyBucketConfiguration 2025-10-16T10:08:41Z logger.go:66: so that Terraform can guarantee to make the same selections by default when
+TestBuggyBucketConfiguration 2025-10-16T10:08:41Z logger.go:66: you run "terraform init" in the future.[0m
+TestBuggyBucketConfiguration 2025-10-16T10:08:41Z logger.go:66: 
+TestBuggyBucketConfiguration 2025-10-16T10:08:41Z logger.go:66: [0m[1m[32mTerraform has been successfully initialized![0m[32m[0m
+TestBuggyBucketConfiguration 2025-10-16T10:08:41Z logger.go:66: [0m[32m
+TestBuggyBucketConfiguration 2025-10-16T10:08:41Z logger.go:66: You may now begin working with Terraform. Try running "terraform plan" to see
+TestBuggyBucketConfiguration 2025-10-16T10:08:41Z logger.go:66: any changes that are required for your infrastructure. All Terraform commands
+TestBuggyBucketConfiguration 2025-10-16T10:08:41Z logger.go:66: should now work.
+TestBuggyBucketConfiguration 2025-10-16T10:08:41Z logger.go:66: 
+TestBuggyBucketConfiguration 2025-10-16T10:08:41Z logger.go:66: If you ever set or change modules or backend configuration for Terraform,
+TestBuggyBucketConfiguration 2025-10-16T10:08:41Z logger.go:66: rerun this command to reinitialize your working directory. If you forget, other
+TestBuggyBucketConfiguration 2025-10-16T10:08:41Z logger.go:66: commands will detect it and remind you to do so if necessary.[0m
+TestBuggyBucketConfiguration 2025-10-16T10:08:41Z retry.go:91: terraform [apply -input=false -auto-approve -var bucket_name=test-bucket-bug -var project_id=wrong-project-id-12345 -lock=false]
+TestBuggyBucketConfiguration 2025-10-16T10:08:41Z logger.go:66: Running command terraform with args [apply -input=false -auto-approve -var bucket_name=test-bucket-bug -var project_id=wrong-project-id-12345 -lock=false]
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66: 
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66: Terraform used the selected providers to generate the following execution
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66: plan. Resource actions are indicated with the following symbols:
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:   [32m+[0m create[0m
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66: 
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66: Terraform will perform the following actions:
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66: 
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66: [1m  # google_storage_bucket.bucket[0m will be created
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66: [0m  [32m+[0m[0m resource "google_storage_bucket" "bucket" {
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:       [32m+[0m[0m effective_labels            = (known after apply)
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:       [32m+[0m[0m force_destroy               = false
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:       [32m+[0m[0m id                          = (known after apply)
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:       [32m+[0m[0m location                    = "US"
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:       [32m+[0m[0m name                        = "test-bucket-bug"
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:       [32m+[0m[0m project                     = "wrong-project-id-12345"
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:       [32m+[0m[0m project_number              = (known after apply)
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:       [32m+[0m[0m public_access_prevention    = "enforced"
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:       [32m+[0m[0m rpo                         = (known after apply)
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:       [32m+[0m[0m self_link                   = (known after apply)
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:       [32m+[0m[0m storage_class               = "STANDARD"
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:       [32m+[0m[0m terraform_labels            = (known after apply)
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:       [32m+[0m[0m uniform_bucket_level_access = true
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:       [32m+[0m[0m url                         = (known after apply)
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66: 
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:       [32m+[0m[0m lifecycle_rule {
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:           [32m+[0m[0m action {
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:               [32m+[0m[0m type = "Delete"
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:             }
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:           [32m+[0m[0m condition {
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:               [32m+[0m[0m age                   = 30
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:               [32m+[0m[0m matches_prefix        = []
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:               [32m+[0m[0m matches_storage_class = []
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:               [32m+[0m[0m matches_suffix        = []
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:               [32m+[0m[0m send_age_if_zero      = true
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:               [32m+[0m[0m with_state            = (known after apply)
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:             }
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:         }
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:       [32m+[0m[0m lifecycle_rule {
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:           [32m+[0m[0m action {
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:               [32m+[0m[0m storage_class = "ARCHIVE"
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:               [32m+[0m[0m type          = "SetStorageClass"
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:             }
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:           [32m+[0m[0m condition {
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:               [32m+[0m[0m age                   = 90
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:               [32m+[0m[0m matches_prefix        = []
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:               [32m+[0m[0m matches_storage_class = [
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:                   [32m+[0m[0m "STANDARD",
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:                 ]
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:               [32m+[0m[0m matches_suffix        = []
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:               [32m+[0m[0m send_age_if_zero      = true
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:               [32m+[0m[0m with_state            = "ARCHIVED"
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:             }
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:         }
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:       [32m+[0m[0m lifecycle_rule {
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:           [32m+[0m[0m action {
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:               [32m+[0m[0m type = "AbortIncompleteMultipartUpload"
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:             }
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:           [32m+[0m[0m condition {
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:               [32m+[0m[0m age                   = 7
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:               [32m+[0m[0m matches_prefix        = []
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:               [32m+[0m[0m matches_storage_class = []
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:               [32m+[0m[0m matches_suffix        = []
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:               [32m+[0m[0m send_age_if_zero      = true
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:               [32m+[0m[0m with_state            = (known after apply)
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:             }
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:         }
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66: 
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:       [32m+[0m[0m logging {
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:           [32m+[0m[0m log_object_prefix = (known after apply)
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:         }
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66: 
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:       [32m+[0m[0m versioning {
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:           [32m+[0m[0m enabled = true
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:         }
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:     }
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66: 
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66: [1mPlan:[0m 1 to add, 0 to change, 0 to destroy.
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66: [0m
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66: Changes to Outputs:
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:   [32m+[0m[0m bucket_name      = "test-bucket-bug"
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:   [32m+[0m[0m bucket_self_link = (known after apply)
+TestBuggyBucketConfiguration 2025-10-16T10:08:42Z logger.go:66:   [32m+[0m[0m bucket_url       = (known after apply)
+TestBuggyBucketConfiguration 2025-10-16T10:08:43Z logger.go:66: [0m[1mgoogle_storage_bucket.bucket: Creating...[0m[0m
+TestBuggyBucketConfiguration 2025-10-16T10:08:43Z logger.go:66: [31m╷[0m[0m
+TestBuggyBucketConfiguration 2025-10-16T10:08:43Z logger.go:66: [31m│[0m [0m[1m[31mError: [0m[0m[1mgoogleapi: Error 400: Unknown project id: wrong-project-id-12345, invalid[0m
+TestBuggyBucketConfiguration 2025-10-16T10:08:43Z logger.go:66: [31m│[0m [0m
+TestBuggyBucketConfiguration 2025-10-16T10:08:43Z logger.go:66: [31m│[0m [0m[0m  with google_storage_bucket.bucket,
+TestBuggyBucketConfiguration 2025-10-16T10:08:43Z logger.go:66: [31m│[0m [0m  on main.tf line 13, in resource "google_storage_bucket" "bucket":
+TestBuggyBucketConfiguration 2025-10-16T10:08:43Z logger.go:66: [31m│[0m [0m  13: resource "google_storage_bucket" "bucket" [4m{[0m[0m
+TestBuggyBucketConfiguration 2025-10-16T10:08:43Z logger.go:66: [31m│[0m [0m
+TestBuggyBucketConfiguration 2025-10-16T10:08:43Z logger.go:66: [31m╵[0m[0m
+TestBuggyBucketConfiguration 2025-10-16T10:08:43Z logger.go:66: ::error::Terraform exited with code 1.
+TestBuggyBucketConfiguration 2025-10-16T10:08:43Z retry.go:99: Returning due to fatal error: FatalError{Underlying: error while running command: exit status 1; [31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mgoogleapi: Error 400: Unknown project id: wrong-project-id-12345, invalid[0m
+[31m│[0m [0m
+[31m│[0m [0m[0m  with google_storage_bucket.bucket,
+[31m│[0m [0m  on main.tf line 13, in resource "google_storage_bucket" "bucket":
+[31m│[0m [0m  13: resource "google_storage_bucket" "bucket" [4m{[0m[0m
+[31m│[0m [0m
+[31m╵[0m[0m}
+    apply.go:15: 
+        	Error Trace:	/home/runner/go/pkg/mod/github.com/gruntwork-io/terratest@v0.46.0/modules/terraform/apply.go:15
+        	            				/home/runner/work/terraform-gcs-poc/terraform-gcs-poc/tests/intentional_bug_test.go:19
+        	Error:      	Received unexpected error:
+        	            	FatalError{Underlying: error while running command: exit status 1; [31m╷[0m[0m
+        	            	[31m│[0m [0m[1m[31mError: [0m[0m[1mgoogleapi: Error 400: Unknown project id: wrong-project-id-12345, invalid[0m
+        	            	[31m│[0m [0m
+        	            	[31m│[0m [0m[0m  with google_storage_bucket.bucket,
+        	            	[31m│[0m [0m  on main.tf line 13, in resource "google_storage_bucket" "bucket":
+        	            	[31m│[0m [0m  13: resource "google_storage_bucket" "bucket" [4m{[0m[0m
+        	            	[31m│[0m [0m
+        	            	[31m╵[0m[0m}
+        	Test:       	TestBuggyBucketConfiguration
+--- FAIL: TestBuggyBucketConfiguration (3.09s)
+=== CONT  TestGCSBucketIAM
+TestGCSBucketIAM 2025-10-16T10:08:43Z retry.go:91: terraform [init -upgrade=false]
+=== CONT  TestGCSBucketCreation
+TestGCSBucketIAM 2025-10-16T10:08:43Z logger.go:66: Running command terraform with args [init -upgrade=false]
+TestGCSBucketCreation 2025-10-16T10:08:43Z retry.go:91: terraform [init -upgrade=false]
+TestGCSBucketCreation 2025-10-16T10:08:43Z logger.go:66: Running command terraform with args [init -upgrade=false]
+=== CONT  TestGCSBucketNotification
+=== CONT  TestGCSBucketWithCustomSettings
+TestGCSBucketNotification 2025-10-16T10:08:43Z retry.go:91: terraform [init -upgrade=false]
+TestGCSBucketNotification 2025-10-16T10:08:43Z logger.go:66: Running command terraform with args [init -upgrade=false]
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:43Z retry.go:91: terraform [init -upgrade=false]
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:43Z logger.go:66: Running command terraform with args [init -upgrade=false]
+TestGCSBucketIAM 2025-10-16T10:08:43Z logger.go:66: 
+TestGCSBucketIAM 2025-10-16T10:08:43Z logger.go:66: [0m[1mInitializing the backend...[0m
+TestGCSBucketIAM 2025-10-16T10:08:43Z logger.go:66: 
+TestGCSBucketIAM 2025-10-16T10:08:43Z logger.go:66: [0m[1mInitializing provider plugins...[0m
+TestGCSBucketIAM 2025-10-16T10:08:43Z logger.go:66: - Finding hashicorp/google versions matching "~> 5.0"...
+TestGCSBucketCreation 2025-10-16T10:08:43Z logger.go:66: 
+TestGCSBucketCreation 2025-10-16T10:08:43Z logger.go:66: [0m[1mInitializing the backend...[0m
+TestGCSBucketCreation 2025-10-16T10:08:43Z logger.go:66: [0m[1mInitializing modules...[0m
+TestGCSBucketCreation 2025-10-16T10:08:43Z logger.go:66: - test_bucket in modules/gcs-bucket
+TestGCSBucketCreation 2025-10-16T10:08:43Z logger.go:66: 
+TestGCSBucketCreation 2025-10-16T10:08:43Z logger.go:66: [0m[1mInitializing provider plugins...[0m
+TestGCSBucketCreation 2025-10-16T10:08:43Z logger.go:66: - Finding hashicorp/google versions matching "~> 5.0"...
+TestGCSBucketNotification 2025-10-16T10:08:43Z logger.go:66: 
+TestGCSBucketNotification 2025-10-16T10:08:43Z logger.go:66: [0m[1mInitializing the backend...[0m
+TestGCSBucketNotification 2025-10-16T10:08:43Z logger.go:66: 
+TestGCSBucketNotification 2025-10-16T10:08:43Z logger.go:66: [0m[1mInitializing provider plugins...[0m
+TestGCSBucketNotification 2025-10-16T10:08:43Z logger.go:66: - Finding hashicorp/google versions matching "~> 5.0"...
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:43Z logger.go:66: 
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:43Z logger.go:66: [0m[1mInitializing the backend...[0m
+TestGCSBucketCreation 2025-10-16T10:08:43Z logger.go:66: - Finding hashicorp/random versions matching "~> 3.0"...
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:43Z logger.go:66: 
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:43Z logger.go:66: [0m[1mInitializing provider plugins...[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:43Z logger.go:66: - Reusing previous version of hashicorp/google from the dependency lock file
+TestGCSBucketIAM 2025-10-16T10:08:43Z logger.go:66: - Installing hashicorp/google v5.45.2...
+TestGCSBucketNotification 2025-10-16T10:08:43Z logger.go:66: - Installing hashicorp/google v5.45.2...
+TestGCSBucketCreation 2025-10-16T10:08:43Z logger.go:66: - Installing hashicorp/random v3.7.2...
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:43Z logger.go:66: - Using previously-installed hashicorp/google v5.45.2
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:43Z logger.go:66: 
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:43Z logger.go:66: [0m[1m[32mTerraform has been successfully initialized![0m[32m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:43Z logger.go:66: [0m[32m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:43Z logger.go:66: You may now begin working with Terraform. Try running "terraform plan" to see
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:43Z logger.go:66: any changes that are required for your infrastructure. All Terraform commands
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:43Z logger.go:66: should now work.
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:43Z logger.go:66: 
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:43Z logger.go:66: If you ever set or change modules or backend configuration for Terraform,
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:43Z logger.go:66: rerun this command to reinitialize your working directory. If you forget, other
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:43Z logger.go:66: commands will detect it and remind you to do so if necessary.[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:43Z retry.go:91: terraform [apply -input=false -auto-approve -var project_id=devops-sandbox-452616 -var bucket_name=custom-test-ik36gz -var location=EU -var storage_class=NEARLINE -var versioning_enabled=false -var lifecycle_age_days=60 -lock=false]
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:43Z logger.go:66: Running command terraform with args [apply -input=false -auto-approve -var project_id=devops-sandbox-452616 -var bucket_name=custom-test-ik36gz -var location=EU -var storage_class=NEARLINE -var versioning_enabled=false -var lifecycle_age_days=60 -lock=false]
+TestGCSBucketCreation 2025-10-16T10:08:44Z logger.go:66: - Installed hashicorp/random v3.7.2 (signed by HashiCorp)
+TestGCSBucketCreation 2025-10-16T10:08:44Z logger.go:66: - Installing hashicorp/google v5.45.2...
+TestGCSBucketNotification 2025-10-16T10:08:44Z logger.go:66: - Installed hashicorp/google v5.45.2 (signed by HashiCorp)
+TestGCSBucketNotification 2025-10-16T10:08:44Z logger.go:66: 
+TestGCSBucketNotification 2025-10-16T10:08:44Z logger.go:66: Terraform has created a lock file [1m.terraform.lock.hcl[0m to record the provider
+TestGCSBucketNotification 2025-10-16T10:08:44Z logger.go:66: selections it made above. Include this file in your version control repository
+TestGCSBucketNotification 2025-10-16T10:08:44Z logger.go:66: so that Terraform can guarantee to make the same selections by default when
+TestGCSBucketNotification 2025-10-16T10:08:44Z logger.go:66: you run "terraform init" in the future.[0m
+TestGCSBucketNotification 2025-10-16T10:08:44Z logger.go:66: 
+TestGCSBucketNotification 2025-10-16T10:08:44Z logger.go:66: [0m[1m[32mTerraform has been successfully initialized![0m[32m[0m
+TestGCSBucketNotification 2025-10-16T10:08:44Z logger.go:66: [0m[32m
+TestGCSBucketNotification 2025-10-16T10:08:44Z logger.go:66: You may now begin working with Terraform. Try running "terraform plan" to see
+TestGCSBucketNotification 2025-10-16T10:08:44Z logger.go:66: any changes that are required for your infrastructure. All Terraform commands
+TestGCSBucketNotification 2025-10-16T10:08:44Z logger.go:66: should now work.
+TestGCSBucketNotification 2025-10-16T10:08:44Z logger.go:66: 
+TestGCSBucketNotification 2025-10-16T10:08:44Z logger.go:66: If you ever set or change modules or backend configuration for Terraform,
+TestGCSBucketNotification 2025-10-16T10:08:44Z logger.go:66: rerun this command to reinitialize your working directory. If you forget, other
+TestGCSBucketNotification 2025-10-16T10:08:44Z logger.go:66: commands will detect it and remind you to do so if necessary.[0m
+TestGCSBucketNotification 2025-10-16T10:08:44Z retry.go:91: terraform [apply -input=false -auto-approve -var bucket_name=terratest-notification-dsraga -var topic_name=terratest-topic-dsraga -var location=US -var project_id=devops-sandbox-452616 -lock=false]
+TestGCSBucketNotification 2025-10-16T10:08:44Z logger.go:66: Running command terraform with args [apply -input=false -auto-approve -var bucket_name=terratest-notification-dsraga -var topic_name=terratest-topic-dsraga -var location=US -var project_id=devops-sandbox-452616 -lock=false]
+TestGCSBucketIAM 2025-10-16T10:08:44Z logger.go:66: - Installed hashicorp/google v5.45.2 (signed by HashiCorp)
+TestGCSBucketIAM 2025-10-16T10:08:44Z logger.go:66: 
+TestGCSBucketIAM 2025-10-16T10:08:44Z logger.go:66: Terraform has created a lock file [1m.terraform.lock.hcl[0m to record the provider
+TestGCSBucketIAM 2025-10-16T10:08:44Z logger.go:66: selections it made above. Include this file in your version control repository
+TestGCSBucketIAM 2025-10-16T10:08:44Z logger.go:66: so that Terraform can guarantee to make the same selections by default when
+TestGCSBucketIAM 2025-10-16T10:08:44Z logger.go:66: you run "terraform init" in the future.[0m
+TestGCSBucketIAM 2025-10-16T10:08:44Z logger.go:66: 
+TestGCSBucketIAM 2025-10-16T10:08:44Z logger.go:66: [0m[1m[32mTerraform has been successfully initialized![0m[32m[0m
+TestGCSBucketIAM 2025-10-16T10:08:44Z logger.go:66: [0m[32m
+TestGCSBucketIAM 2025-10-16T10:08:44Z logger.go:66: You may now begin working with Terraform. Try running "terraform plan" to see
+TestGCSBucketIAM 2025-10-16T10:08:44Z logger.go:66: any changes that are required for your infrastructure. All Terraform commands
+TestGCSBucketIAM 2025-10-16T10:08:44Z logger.go:66: should now work.
+TestGCSBucketIAM 2025-10-16T10:08:44Z logger.go:66: 
+TestGCSBucketIAM 2025-10-16T10:08:44Z logger.go:66: If you ever set or change modules or backend configuration for Terraform,
+TestGCSBucketIAM 2025-10-16T10:08:44Z logger.go:66: rerun this command to reinitialize your working directory. If you forget, other
+TestGCSBucketIAM 2025-10-16T10:08:44Z logger.go:66: commands will detect it and remind you to do so if necessary.[0m
+TestGCSBucketIAM 2025-10-16T10:08:44Z retry.go:91: terraform [apply -input=false -auto-approve -var bucket_name=terratest-iam-tiqreh -var member=user:test@example.com -var role=roles/storage.objectViewer -var location=US -var project_id=devops-sandbox-452616 -lock=false]
+TestGCSBucketIAM 2025-10-16T10:08:44Z logger.go:66: Running command terraform with args [apply -input=false -auto-approve -var bucket_name=terratest-iam-tiqreh -var member=user:test@example.com -var role=roles/storage.objectViewer -var location=US -var project_id=devops-sandbox-452616 -lock=false]
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m╷[0m[0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m[0mA variable named "topic_name" was assigned on the command line, but the
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0mroot module does not declare a variable of that name. To use this value,
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0madd a "variable" block to the configuration.
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m╵[0m[0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m╷[0m[0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m[0mA variable named "location" was assigned on the command line, but the root
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0mmodule does not declare a variable of that name. To use this value, add a
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m"variable" block to the configuration.
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m╵[0m[0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m╷[0m[0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m[0mA variable named "project_id" was assigned on the command line, but the
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0mroot module does not declare a variable of that name. To use this value,
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0madd a "variable" block to the configuration.
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m╵[0m[0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m╷[0m[0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m[1m[31mError: [0m[0m[1mNo value for required variable[0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m[0m  on variables.tf line 12:
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m  12: [4mvariable "pubsub_topic"[0m {[0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0mThe root module input variable "pubsub_topic" is not set, and has no
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0mdefault value. Use a -var or -var-file command line argument to provide a
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0mvalue for this variable.
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m╵[0m[0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: ::error::Terraform exited with code 1.
+TestGCSBucketNotification 2025-10-16T10:08:45Z retry.go:99: Returning due to fatal error: FatalError{Underlying: error while running command: exit status 1; [31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+[31m│[0m [0m
+[31m│[0m [0m[0mA variable named "topic_name" was assigned on the command line, but the
+[31m│[0m [0mroot module does not declare a variable of that name. To use this value,
+[31m│[0m [0madd a "variable" block to the configuration.
+[31m╵[0m[0m
+[31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+[31m│[0m [0m
+[31m│[0m [0m[0mA variable named "location" was assigned on the command line, but the root
+[31m│[0m [0mmodule does not declare a variable of that name. To use this value, add a
+[31m│[0m [0m"variable" block to the configuration.
+[31m╵[0m[0m
+[31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+[31m│[0m [0m
+[31m│[0m [0m[0mA variable named "project_id" was assigned on the command line, but the
+[31m│[0m [0mroot module does not declare a variable of that name. To use this value,
+[31m│[0m [0madd a "variable" block to the configuration.
+[31m╵[0m[0m
+[31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mNo value for required variable[0m
+[31m│[0m [0m
+[31m│[0m [0m[0m  on variables.tf line 12:
+[31m│[0m [0m  12: [4mvariable "pubsub_topic"[0m {[0m
+[31m│[0m [0m
+[31m│[0m [0mThe root module input variable "pubsub_topic" is not set, and has no
+[31m│[0m [0mdefault value. Use a -var or -var-file command line argument to provide a
+[31m│[0m [0mvalue for this variable.
+[31m╵[0m[0m}
+=== NAME  TestGCSBucketNotification
+    apply.go:15: 
+        	Error Trace:	/home/runner/go/pkg/mod/github.com/gruntwork-io/terratest@v0.46.0/modules/terraform/apply.go:15
+        	            				/home/runner/work/terraform-gcs-poc/terraform-gcs-poc/tests/gcs_bucket_notification_test.go:34
+        	Error:      	Received unexpected error:
+        	            	FatalError{Underlying: error while running command: exit status 1; [31m╷[0m[0m
+        	            	[31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+        	            	[31m│[0m [0m
+        	            	[31m│[0m [0m[0mA variable named "topic_name" was assigned on the command line, but the
+        	            	[31m│[0m [0mroot module does not declare a variable of that name. To use this value,
+        	            	[31m│[0m [0madd a "variable" block to the configuration.
+        	            	[31m╵[0m[0m
+        	            	[31m╷[0m[0m
+        	            	[31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+        	            	[31m│[0m [0m
+        	            	[31m│[0m [0m[0mA variable named "location" was assigned on the command line, but the root
+        	            	[31m│[0m [0mmodule does not declare a variable of that name. To use this value, add a
+        	            	[31m│[0m [0m"variable" block to the configuration.
+        	            	[31m╵[0m[0m
+        	            	[31m╷[0m[0m
+        	            	[31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+        	            	[31m│[0m [0m
+        	            	[31m│[0m [0m[0mA variable named "project_id" was assigned on the command line, but the
+        	            	[31m│[0m [0mroot module does not declare a variable of that name. To use this value,
+        	            	[31m│[0m [0madd a "variable" block to the configuration.
+        	            	[31m╵[0m[0m
+        	            	[31m╷[0m[0m
+        	            	[31m│[0m [0m[1m[31mError: [0m[0m[1mNo value for required variable[0m
+        	            	[31m│[0m [0m
+        	            	[31m│[0m [0m[0m  on variables.tf line 12:
+        	            	[31m│[0m [0m  12: [4mvariable "pubsub_topic"[0m {[0m
+        	            	[31m│[0m [0m
+        	            	[31m│[0m [0mThe root module input variable "pubsub_topic" is not set, and has no
+        	            	[31m│[0m [0mdefault value. Use a -var or -var-file command line argument to provide a
+        	            	[31m│[0m [0mvalue for this variable.
+        	            	[31m╵[0m[0m}
+        	Test:       	TestGCSBucketNotification
+TestGCSBucketNotification 2025-10-16T10:08:45Z retry.go:91: terraform [destroy -auto-approve -input=false -var project_id=devops-sandbox-452616 -var bucket_name=terratest-notification-dsraga -var topic_name=terratest-topic-dsraga -var location=US -lock=false]
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: Running command terraform with args [destroy -auto-approve -input=false -var project_id=devops-sandbox-452616 -var bucket_name=terratest-notification-dsraga -var topic_name=terratest-topic-dsraga -var location=US -lock=false]
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: [31m╷[0m[0m
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m[0mA variable named "location" was assigned on the command line, but the root
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0mmodule does not declare a variable of that name. To use this value, add a
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m"variable" block to the configuration.
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: [31m╵[0m[0m
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: [31m╷[0m[0m
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m[0mA variable named "project_id" was assigned on the command line, but the
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0mroot module does not declare a variable of that name. To use this value,
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0madd a "variable" block to the configuration.
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: [31m╵[0m[0m
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: ::error::Terraform exited with code 1.
+TestGCSBucketIAM 2025-10-16T10:08:45Z retry.go:99: Returning due to fatal error: FatalError{Underlying: error while running command: exit status 1; [31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+[31m│[0m [0m
+[31m│[0m [0m[0mA variable named "location" was assigned on the command line, but the root
+[31m│[0m [0mmodule does not declare a variable of that name. To use this value, add a
+[31m│[0m [0m"variable" block to the configuration.
+[31m╵[0m[0m
+[31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+[31m│[0m [0m
+[31m│[0m [0m[0mA variable named "project_id" was assigned on the command line, but the
+[31m│[0m [0mroot module does not declare a variable of that name. To use this value,
+[31m│[0m [0madd a "variable" block to the configuration.
+[31m╵[0m[0m}
+=== NAME  TestGCSBucketIAM
+    apply.go:15: 
+        	Error Trace:	/home/runner/go/pkg/mod/github.com/gruntwork-io/terratest@v0.46.0/modules/terraform/apply.go:15
+        	            				/home/runner/work/terraform-gcs-poc/terraform-gcs-poc/tests/gcs_bucket_iam_test.go:36
+        	Error:      	Received unexpected error:
+        	            	FatalError{Underlying: error while running command: exit status 1; [31m╷[0m[0m
+        	            	[31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+        	            	[31m│[0m [0m
+        	            	[31m│[0m [0m[0mA variable named "location" was assigned on the command line, but the root
+        	            	[31m│[0m [0mmodule does not declare a variable of that name. To use this value, add a
+        	            	[31m│[0m [0m"variable" block to the configuration.
+        	            	[31m╵[0m[0m
+        	            	[31m╷[0m[0m
+        	            	[31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+        	            	[31m│[0m [0m
+        	            	[31m│[0m [0m[0mA variable named "project_id" was assigned on the command line, but the
+        	            	[31m│[0m [0mroot module does not declare a variable of that name. To use this value,
+        	            	[31m│[0m [0madd a "variable" block to the configuration.
+        	            	[31m╵[0m[0m}
+        	Test:       	TestGCSBucketIAM
+TestGCSBucketIAM 2025-10-16T10:08:45Z retry.go:91: terraform [destroy -auto-approve -input=false -var project_id=devops-sandbox-452616 -var bucket_name=terratest-iam-tiqreh -var member=user:test@example.com -var role=roles/storage.objectViewer -var location=US -lock=false]
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: Running command terraform with args [destroy -auto-approve -input=false -var project_id=devops-sandbox-452616 -var bucket_name=terratest-iam-tiqreh -var member=user:test@example.com -var role=roles/storage.objectViewer -var location=US -lock=false]
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66: 
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66: Terraform used the selected providers to generate the following execution
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66: plan. Resource actions are indicated with the following symbols:
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:   [32m+[0m create[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66: 
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66: Terraform will perform the following actions:
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66: 
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66: [1m  # google_storage_bucket.bucket[0m will be created
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66: [0m  [32m+[0m[0m resource "google_storage_bucket" "bucket" {
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:       [32m+[0m[0m effective_labels            = (known after apply)
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:       [32m+[0m[0m force_destroy               = false
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:       [32m+[0m[0m id                          = (known after apply)
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:       [32m+[0m[0m location                    = "EU"
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:       [32m+[0m[0m name                        = "custom-test-ik36gz"
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:       [32m+[0m[0m project                     = "devops-sandbox-452616"
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:       [32m+[0m[0m project_number              = (known after apply)
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:       [32m+[0m[0m public_access_prevention    = "enforced"
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:       [32m+[0m[0m rpo                         = (known after apply)
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:       [32m+[0m[0m self_link                   = (known after apply)
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:       [32m+[0m[0m storage_class               = "NEARLINE"
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:       [32m+[0m[0m terraform_labels            = (known after apply)
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:       [32m+[0m[0m uniform_bucket_level_access = true
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:       [32m+[0m[0m url                         = (known after apply)
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66: 
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:       [32m+[0m[0m lifecycle_rule {
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:           [32m+[0m[0m action {
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:               [32m+[0m[0m type = "Delete"
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:             }
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:           [32m+[0m[0m condition {
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:               [32m+[0m[0m age                   = 60
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:               [32m+[0m[0m matches_prefix        = []
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:               [32m+[0m[0m matches_storage_class = []
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:               [32m+[0m[0m matches_suffix        = []
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:               [32m+[0m[0m send_age_if_zero      = true
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:               [32m+[0m[0m with_state            = (known after apply)
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:             }
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:         }
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:       [32m+[0m[0m lifecycle_rule {
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:           [32m+[0m[0m action {
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:               [32m+[0m[0m storage_class = "ARCHIVE"
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:               [32m+[0m[0m type          = "SetStorageClass"
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:             }
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:           [32m+[0m[0m condition {
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:               [32m+[0m[0m age                   = 90
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:               [32m+[0m[0m matches_prefix        = []
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:               [32m+[0m[0m matches_storage_class = [
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:                   [32m+[0m[0m "STANDARD",
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:                 ]
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:               [32m+[0m[0m matches_suffix        = []
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:               [32m+[0m[0m send_age_if_zero      = true
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:               [32m+[0m[0m with_state            = "ARCHIVED"
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:             }
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:         }
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:       [32m+[0m[0m lifecycle_rule {
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:           [32m+[0m[0m action {
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:               [32m+[0m[0m type = "AbortIncompleteMultipartUpload"
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:             }
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:           [32m+[0m[0m condition {
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:               [32m+[0m[0m age                   = 7
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:               [32m+[0m[0m matches_prefix        = []
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:               [32m+[0m[0m matches_storage_class = []
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:               [32m+[0m[0m matches_suffix        = []
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:               [32m+[0m[0m send_age_if_zero      = true
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:               [32m+[0m[0m with_state            = (known after apply)
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:             }
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:         }
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66: 
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:       [32m+[0m[0m logging {
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:           [32m+[0m[0m log_object_prefix = (known after apply)
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:         }
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66: 
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:       [32m+[0m[0m versioning {
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:           [32m+[0m[0m enabled = false
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:         }
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:     }
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66: 
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66: [1mPlan:[0m 1 to add, 0 to change, 0 to destroy.
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66: [0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66: Changes to Outputs:
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:   [33m~[0m[0m bucket_name      = "test-bucket-bug" [33m->[0m[0m "custom-test-ik36gz"
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:   [32m+[0m[0m bucket_self_link = (known after apply)
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66:   [32m+[0m[0m bucket_url       = (known after apply)
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m╷[0m[0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m[0mA variable named "project_id" was assigned on the command line, but the
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0mroot module does not declare a variable of that name. To use this value,
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0madd a "variable" block to the configuration.
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m╵[0m[0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m╷[0m[0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m[0mA variable named "topic_name" was assigned on the command line, but the
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0mroot module does not declare a variable of that name. To use this value,
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0madd a "variable" block to the configuration.
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m╵[0m[0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m╷[0m[0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m[0mA variable named "location" was assigned on the command line, but the root
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0mmodule does not declare a variable of that name. To use this value, add a
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m"variable" block to the configuration.
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m╵[0m[0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m╷[0m[0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m[1m[31mError: [0m[0m[1mNo value for required variable[0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m[0m  on variables.tf line 12:
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m  12: [4mvariable "pubsub_topic"[0m {[0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0mThe root module input variable "pubsub_topic" is not set, and has no
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0mdefault value. Use a -var or -var-file command line argument to provide a
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0mvalue for this variable.
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: [31m╵[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:45Z logger.go:66: - Installed hashicorp/google v5.45.2 (signed by HashiCorp)
+TestGCSBucketCreation 2025-10-16T10:08:45Z logger.go:66: 
+TestGCSBucketCreation 2025-10-16T10:08:45Z logger.go:66: Terraform has created a lock file [1m.terraform.lock.hcl[0m to record the provider
+TestGCSBucketCreation 2025-10-16T10:08:45Z logger.go:66: selections it made above. Include this file in your version control repository
+TestGCSBucketCreation 2025-10-16T10:08:45Z logger.go:66: so that Terraform can guarantee to make the same selections by default when
+TestGCSBucketCreation 2025-10-16T10:08:45Z logger.go:66: you run "terraform init" in the future.[0m
+TestGCSBucketCreation 2025-10-16T10:08:45Z logger.go:66: 
+TestGCSBucketCreation 2025-10-16T10:08:45Z logger.go:66: [0m[1m[32mTerraform has been successfully initialized![0m[32m[0m
+TestGCSBucketCreation 2025-10-16T10:08:45Z logger.go:66: [0m[32m
+TestGCSBucketCreation 2025-10-16T10:08:45Z logger.go:66: You may now begin working with Terraform. Try running "terraform plan" to see
+TestGCSBucketCreation 2025-10-16T10:08:45Z logger.go:66: any changes that are required for your infrastructure. All Terraform commands
+TestGCSBucketCreation 2025-10-16T10:08:45Z logger.go:66: should now work.
+TestGCSBucketCreation 2025-10-16T10:08:45Z logger.go:66: 
+TestGCSBucketCreation 2025-10-16T10:08:45Z logger.go:66: If you ever set or change modules or backend configuration for Terraform,
+TestGCSBucketCreation 2025-10-16T10:08:45Z logger.go:66: rerun this command to reinitialize your working directory. If you forget, other
+TestGCSBucketCreation 2025-10-16T10:08:45Z logger.go:66: commands will detect it and remind you to do so if necessary.[0m
+TestGCSBucketNotification 2025-10-16T10:08:45Z logger.go:66: ::error::Terraform exited with code 1.
+TestGCSBucketNotification 2025-10-16T10:08:45Z retry.go:99: Returning due to fatal error: FatalError{Underlying: error while running command: exit status 1; [31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+[31m│[0m [0m
+[31m│[0m [0m[0mA variable named "project_id" was assigned on the command line, but the
+[31m│[0m [0mroot module does not declare a variable of that name. To use this value,
+[31m│[0m [0madd a "variable" block to the configuration.
+[31m╵[0m[0m
+[31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+[31m│[0m [0m
+[31m│[0m [0m[0mA variable named "topic_name" was assigned on the command line, but the
+[31m│[0m [0mroot module does not declare a variable of that name. To use this value,
+[31m│[0m [0madd a "variable" block to the configuration.
+[31m╵[0m[0m
+[31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+[31m│[0m [0m
+[31m│[0m [0m[0mA variable named "location" was assigned on the command line, but the root
+[31m│[0m [0mmodule does not declare a variable of that name. To use this value, add a
+[31m│[0m [0m"variable" block to the configuration.
+[31m╵[0m[0m
+[31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mNo value for required variable[0m
+[31m│[0m [0m
+[31m│[0m [0m[0m  on variables.tf line 12:
+[31m│[0m [0m  12: [4mvariable "pubsub_topic"[0m {[0m
+[31m│[0m [0m
+[31m│[0m [0mThe root module input variable "pubsub_topic" is not set, and has no
+[31m│[0m [0mdefault value. Use a -var or -var-file command line argument to provide a
+[31m│[0m [0mvalue for this variable.
+[31m╵[0m[0m}
+=== NAME  TestGCSBucketNotification
+    destroy.go:11: 
+        	Error Trace:	/home/runner/go/pkg/mod/github.com/gruntwork-io/terratest@v0.46.0/modules/terraform/destroy.go:11
+        	            				/home/runner/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.1.linux-amd64/src/runtime/panic.go:615
+        	            				/home/runner/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.1.linux-amd64/src/testing/testing.go:1013
+        	            				/home/runner/go/pkg/mod/github.com/gruntwork-io/terratest@v0.46.0/modules/terraform/apply.go:15
+        	            				/home/runner/work/terraform-gcs-poc/terraform-gcs-poc/tests/gcs_bucket_notification_test.go:34
+        	Error:      	Received unexpected error:
+        	            	FatalError{Underlying: error while running command: exit status 1; [31m╷[0m[0m
+        	            	[31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+        	            	[31m│[0m [0m
+        	            	[31m│[0m [0m[0mA variable named "project_id" was assigned on the command line, but the
+        	            	[31m│[0m [0mroot module does not declare a variable of that name. To use this value,
+        	            	[31m│[0m [0madd a "variable" block to the configuration.
+        	            	[31m╵[0m[0m
+        	            	[31m╷[0m[0m
+        	            	[31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+        	            	[31m│[0m [0m
+        	            	[31m│[0m [0m[0mA variable named "topic_name" was assigned on the command line, but the
+        	            	[31m│[0m [0mroot module does not declare a variable of that name. To use this value,
+        	            	[31m│[0m [0madd a "variable" block to the configuration.
+        	            	[31m╵[0m[0m
+        	            	[31m╷[0m[0m
+        	            	[31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+        	            	[31m│[0m [0m
+        	            	[31m│[0m [0m[0mA variable named "location" was assigned on the command line, but the root
+        	            	[31m│[0m [0mmodule does not declare a variable of that name. To use this value, add a
+        	            	[31m│[0m [0m"variable" block to the configuration.
+        	            	[31m╵[0m[0m
+        	            	[31m╷[0m[0m
+        	            	[31m│[0m [0m[1m[31mError: [0m[0m[1mNo value for required variable[0m
+        	            	[31m│[0m [0m
+        	            	[31m│[0m [0m[0m  on variables.tf line 12:
+        	            	[31m│[0m [0m  12: [4mvariable "pubsub_topic"[0m {[0m
+        	            	[31m│[0m [0m
+        	            	[31m│[0m [0mThe root module input variable "pubsub_topic" is not set, and has no
+        	            	[31m│[0m [0mdefault value. Use a -var or -var-file command line argument to provide a
+        	            	[31m│[0m [0mvalue for this variable.
+        	            	[31m╵[0m[0m}
+        	Test:       	TestGCSBucketNotification
+--- FAIL: TestGCSBucketNotification (1.94s)
+TestGCSBucketCreation 2025-10-16T10:08:45Z retry.go:91: terraform [apply -input=false -auto-approve -var project_id=devops-sandbox-452616 -var bucket_name=test-bucket-devops-sandbox-452616-HPbSya -lock=false]
+TestGCSBucketCreation 2025-10-16T10:08:45Z logger.go:66: Running command terraform with args [apply -input=false -auto-approve -var project_id=devops-sandbox-452616 -var bucket_name=test-bucket-devops-sandbox-452616-HPbSya -lock=false]
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: [31m╷[0m[0m
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m[0mA variable named "project_id" was assigned on the command line, but the
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0mroot module does not declare a variable of that name. To use this value,
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0madd a "variable" block to the configuration.
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: [31m╵[0m[0m
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: [31m╷[0m[0m
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m[0mA variable named "location" was assigned on the command line, but the root
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0mmodule does not declare a variable of that name. To use this value, add a
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: [31m│[0m [0m"variable" block to the configuration.
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: [31m╵[0m[0m
+TestGCSBucketIAM 2025-10-16T10:08:45Z logger.go:66: ::error::Terraform exited with code 1.
+TestGCSBucketIAM 2025-10-16T10:08:45Z retry.go:99: Returning due to fatal error: FatalError{Underlying: error while running command: exit status 1; [31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+[31m│[0m [0m
+[31m│[0m [0m[0mA variable named "project_id" was assigned on the command line, but the
+[31m│[0m [0mroot module does not declare a variable of that name. To use this value,
+[31m│[0m [0madd a "variable" block to the configuration.
+[31m╵[0m[0m
+[31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+[31m│[0m [0m
+[31m│[0m [0m[0mA variable named "location" was assigned on the command line, but the root
+[31m│[0m [0mmodule does not declare a variable of that name. To use this value, add a
+[31m│[0m [0m"variable" block to the configuration.
+[31m╵[0m[0m}
+=== NAME  TestGCSBucketIAM
+    destroy.go:11: 
+        	Error Trace:	/home/runner/go/pkg/mod/github.com/gruntwork-io/terratest@v0.46.0/modules/terraform/destroy.go:11
+        	            				/home/runner/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.1.linux-amd64/src/runtime/panic.go:615
+        	            				/home/runner/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.1.linux-amd64/src/testing/testing.go:1013
+        	            				/home/runner/go/pkg/mod/github.com/gruntwork-io/terratest@v0.46.0/modules/terraform/apply.go:15
+        	            				/home/runner/work/terraform-gcs-poc/terraform-gcs-poc/tests/gcs_bucket_iam_test.go:36
+        	Error:      	Received unexpected error:
+        	            	FatalError{Underlying: error while running command: exit status 1; [31m╷[0m[0m
+        	            	[31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+        	            	[31m│[0m [0m
+        	            	[31m│[0m [0m[0mA variable named "project_id" was assigned on the command line, but the
+        	            	[31m│[0m [0mroot module does not declare a variable of that name. To use this value,
+        	            	[31m│[0m [0madd a "variable" block to the configuration.
+        	            	[31m╵[0m[0m
+        	            	[31m╷[0m[0m
+        	            	[31m│[0m [0m[1m[31mError: [0m[0m[1mValue for undeclared variable[0m
+        	            	[31m│[0m [0m
+        	            	[31m│[0m [0m[0mA variable named "location" was assigned on the command line, but the root
+        	            	[31m│[0m [0mmodule does not declare a variable of that name. To use this value, add a
+        	            	[31m│[0m [0m"variable" block to the configuration.
+        	            	[31m╵[0m[0m}
+        	Test:       	TestGCSBucketIAM
+--- FAIL: TestGCSBucketIAM (1.96s)
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:45Z logger.go:66: [0m[1mgoogle_storage_bucket.bucket: Creating...[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66: 
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66: Terraform used the selected providers to generate the following execution
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66: plan. Resource actions are indicated with the following symbols:
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:   [32m+[0m create[0m
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66: 
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66: Terraform will perform the following actions:
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66: 
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66: [1m  # random_id.suffix[0m will be created
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66: [0m  [32m+[0m[0m resource "random_id" "suffix" {
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:       [32m+[0m[0m b64_std     = (known after apply)
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:       [32m+[0m[0m b64_url     = (known after apply)
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:       [32m+[0m[0m byte_length = 4
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:       [32m+[0m[0m dec         = (known after apply)
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:       [32m+[0m[0m hex         = (known after apply)
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:       [32m+[0m[0m id          = (known after apply)
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:     }
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66: 
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66: [1m  # module.test_bucket.google_storage_bucket.bucket[0m will be created
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66: [0m  [32m+[0m[0m resource "google_storage_bucket" "bucket" {
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:       [32m+[0m[0m effective_labels            = {
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:           [32m+[0m[0m "environment" = "test"
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:           [32m+[0m[0m "managed_by"  = "terraform"
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:           [32m+[0m[0m "purpose"     = "poc"
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:         }
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:       [32m+[0m[0m force_destroy               = false
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:       [32m+[0m[0m id                          = (known after apply)
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:       [32m+[0m[0m labels                      = {
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:           [32m+[0m[0m "environment" = "test"
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:           [32m+[0m[0m "managed_by"  = "terraform"
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:           [32m+[0m[0m "purpose"     = "poc"
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:         }
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:       [32m+[0m[0m location                    = "US"
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:       [32m+[0m[0m name                        = (known after apply)
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:       [32m+[0m[0m project                     = "devops-sandbox-452616"
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:       [32m+[0m[0m project_number              = (known after apply)
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:       [32m+[0m[0m public_access_prevention    = "enforced"
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:       [32m+[0m[0m rpo                         = (known after apply)
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:       [32m+[0m[0m self_link                   = (known after apply)
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:       [32m+[0m[0m storage_class               = "STANDARD"
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:       [32m+[0m[0m terraform_labels            = {
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:           [32m+[0m[0m "environment" = "test"
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:           [32m+[0m[0m "managed_by"  = "terraform"
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:           [32m+[0m[0m "purpose"     = "poc"
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:         }
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:       [32m+[0m[0m uniform_bucket_level_access = true
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:       [32m+[0m[0m url                         = (known after apply)
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66: 
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:       [32m+[0m[0m lifecycle_rule {
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:           [32m+[0m[0m action {
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:               [32m+[0m[0m type = "Delete"
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:             }
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:           [32m+[0m[0m condition {
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:               [32m+[0m[0m age                   = 30
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:               [32m+[0m[0m matches_prefix        = []
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:               [32m+[0m[0m matches_storage_class = []
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:               [32m+[0m[0m matches_suffix        = []
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:               [32m+[0m[0m send_age_if_zero      = true
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:               [32m+[0m[0m with_state            = (known after apply)
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:             }
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:         }
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:       [32m+[0m[0m lifecycle_rule {
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:           [32m+[0m[0m action {
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:               [32m+[0m[0m storage_class = "ARCHIVE"
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:               [32m+[0m[0m type          = "SetStorageClass"
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:             }
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:           [32m+[0m[0m condition {
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:               [32m+[0m[0m age                   = 90
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:               [32m+[0m[0m matches_prefix        = []
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:               [32m+[0m[0m matches_storage_class = [
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:                   [32m+[0m[0m "STANDARD",
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:                 ]
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:               [32m+[0m[0m matches_suffix        = []
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:               [32m+[0m[0m send_age_if_zero      = true
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:               [32m+[0m[0m with_state            = "ARCHIVED"
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:             }
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:         }
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:       [32m+[0m[0m lifecycle_rule {
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:           [32m+[0m[0m action {
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:               [32m+[0m[0m type = "AbortIncompleteMultipartUpload"
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:             }
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:           [32m+[0m[0m condition {
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:               [32m+[0m[0m age                   = 7
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:               [32m+[0m[0m matches_prefix        = []
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:               [32m+[0m[0m matches_storage_class = []
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:               [32m+[0m[0m matches_suffix        = []
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:               [32m+[0m[0m send_age_if_zero      = true
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:               [32m+[0m[0m with_state            = (known after apply)
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:             }
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:         }
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66: 
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:       [32m+[0m[0m logging {
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:           [32m+[0m[0m log_bucket        = "logs-devops-sandbox-452616"
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:           [32m+[0m[0m log_object_prefix = (known after apply)
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:         }
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66: 
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:       [32m+[0m[0m versioning {
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:           [32m+[0m[0m enabled = true
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:         }
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:     }
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66: 
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66: [1mPlan:[0m 2 to add, 0 to change, 0 to destroy.
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66: [0m
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66: Changes to Outputs:
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:   [32m+[0m[0m bucket_name = (known after apply)
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66:   [32m+[0m[0m bucket_url  = (known after apply)
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66: [0m[1mrandom_id.suffix: Creating...[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:46Z logger.go:66: [0m[1mrandom_id.suffix: Creation complete after 0s [id=-g_bjQ][0m
+TestGCSBucketCreation 2025-10-16T10:08:47Z logger.go:66: [0m[1mmodule.test_bucket.google_storage_bucket.bucket: Creating...[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:47Z logger.go:66: [0m[1mgoogle_storage_bucket.bucket: Creation complete after 2s [id=custom-test-ik36gz][0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:48Z logger.go:66: [0m[1m[32m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:48Z logger.go:66: Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:48Z logger.go:66: [0m[0m[1m[32m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:48Z logger.go:66: Outputs:
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:48Z logger.go:66: 
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:48Z logger.go:66: [0mbucket_name = "custom-test-ik36gz"
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:48Z logger.go:66: bucket_self_link = "https://www.googleapis.com/storage/v1/b/custom-test-ik36gz"
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:48Z logger.go:66: bucket_url = "gs://custom-test-ik36gz"
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:48Z retry.go:91: terraform [destroy -auto-approve -input=false -var bucket_name=custom-test-ik36gz -var location=EU -var storage_class=NEARLINE -var versioning_enabled=false -var lifecycle_age_days=60 -var project_id=devops-sandbox-452616 -lock=false]
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:48Z logger.go:66: Running command terraform with args [destroy -auto-approve -input=false -var bucket_name=custom-test-ik36gz -var location=EU -var storage_class=NEARLINE -var versioning_enabled=false -var lifecycle_age_days=60 -var project_id=devops-sandbox-452616 -lock=false]
+TestGCSBucketCreation 2025-10-16T10:08:48Z logger.go:66: [0m[1mmodule.test_bucket.google_storage_bucket.bucket: Creation complete after 2s [id=test-bucket-devops-sandbox-452616-fa0fdb8d][0m
+TestGCSBucketCreation 2025-10-16T10:08:48Z logger.go:66: [0m[1m[32m
+TestGCSBucketCreation 2025-10-16T10:08:48Z logger.go:66: Apply complete! Resources: 2 added, 0 changed, 0 destroyed.
+TestGCSBucketCreation 2025-10-16T10:08:48Z logger.go:66: [0m[0m[1m[32m
+TestGCSBucketCreation 2025-10-16T10:08:48Z logger.go:66: Outputs:
+TestGCSBucketCreation 2025-10-16T10:08:48Z logger.go:66: 
+TestGCSBucketCreation 2025-10-16T10:08:48Z logger.go:66: [0mbucket_name = "test-bucket-devops-sandbox-452616-fa0fdb8d"
+TestGCSBucketCreation 2025-10-16T10:08:48Z logger.go:66: bucket_url = "gs://test-bucket-devops-sandbox-452616-fa0fdb8d"
+TestGCSBucketCreation 2025-10-16T10:08:48Z retry.go:91: terraform [output -no-color -json bucket_name]
+TestGCSBucketCreation 2025-10-16T10:08:48Z logger.go:66: Running command terraform with args [output -no-color -json bucket_name]
+TestGCSBucketCreation 2025-10-16T10:08:48Z logger.go:66: "test-bucket-devops-sandbox-452616-fa0fdb8d"
+TestGCSBucketCreation 2025-10-16T10:08:48Z retry.go:91: terraform [output -no-color -json bucket_url]
+TestGCSBucketCreation 2025-10-16T10:08:48Z logger.go:66: Running command terraform with args [output -no-color -json bucket_url]
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66: [0m[1mgoogle_storage_bucket.bucket: Refreshing state... [id=custom-test-ik36gz][0m
+TestGCSBucketCreation 2025-10-16T10:08:49Z logger.go:66: "gs://test-bucket-devops-sandbox-452616-fa0fdb8d"
+TestGCSBucketCreation 2025-10-16T10:08:49Z retry.go:91: terraform [destroy -auto-approve -input=false -var project_id=devops-sandbox-452616 -var bucket_name=test-bucket-devops-sandbox-452616-HPbSya -lock=false]
+TestGCSBucketCreation 2025-10-16T10:08:49Z logger.go:66: Running command terraform with args [destroy -auto-approve -input=false -var project_id=devops-sandbox-452616 -var bucket_name=test-bucket-devops-sandbox-452616-HPbSya -lock=false]
+TestGCSBucketCreation 2025-10-16T10:08:49Z logger.go:66: [0m[1mrandom_id.suffix: Refreshing state... [id=-g_bjQ][0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66: 
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66: Terraform used the selected providers to generate the following execution
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66: plan. Resource actions are indicated with the following symbols:
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:   [31m-[0m destroy[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66: 
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66: Terraform will perform the following actions:
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66: 
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66: [1m  # google_storage_bucket.bucket[0m will be [1m[31mdestroyed[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66: [0m  [31m-[0m[0m resource "google_storage_bucket" "bucket" {
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:       [31m-[0m[0m default_event_based_hold    = false [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:       [31m-[0m[0m effective_labels            = {} [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:       [31m-[0m[0m enable_object_retention     = false [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:       [31m-[0m[0m force_destroy               = false [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:       [31m-[0m[0m id                          = "custom-test-ik36gz" [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:       [31m-[0m[0m labels                      = {} [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:       [31m-[0m[0m location                    = "EU" [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:       [31m-[0m[0m name                        = "custom-test-ik36gz" [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:       [31m-[0m[0m project                     = "devops-sandbox-452616" [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:       [31m-[0m[0m project_number              = 209427249385 [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:       [31m-[0m[0m public_access_prevention    = "enforced" [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:       [31m-[0m[0m requester_pays              = false [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:       [31m-[0m[0m rpo                         = "DEFAULT" [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:       [31m-[0m[0m self_link                   = "https://www.googleapis.com/storage/v1/b/custom-test-ik36gz" [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:       [31m-[0m[0m storage_class               = "NEARLINE" [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:       [31m-[0m[0m terraform_labels            = {} [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:       [31m-[0m[0m uniform_bucket_level_access = true [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:       [31m-[0m[0m url                         = "gs://custom-test-ik36gz" [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66: 
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:       [31m-[0m[0m lifecycle_rule {
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:           [31m-[0m[0m action {
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m type = "Delete" [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:             }
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:           [31m-[0m[0m condition {
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m age                                     = 60 [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m days_since_custom_time                  = 0 [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m days_since_noncurrent_time              = 0 [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m matches_prefix                          = [] [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m matches_storage_class                   = [] [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m matches_suffix                          = [] [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m no_age                                  = false [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m num_newer_versions                      = 0 [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m send_age_if_zero                        = true [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m send_days_since_custom_time_if_zero     = false [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m send_days_since_noncurrent_time_if_zero = false [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m send_num_newer_versions_if_zero         = false [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m with_state                              = "ANY" [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:             }
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:         }
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:       [31m-[0m[0m lifecycle_rule {
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:           [31m-[0m[0m action {
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m storage_class = "ARCHIVE" [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m type          = "SetStorageClass" [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:             }
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:           [31m-[0m[0m condition {
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m age                                     = 90 [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m days_since_custom_time                  = 0 [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m days_since_noncurrent_time              = 0 [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m matches_prefix                          = [] [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m matches_storage_class                   = [
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:                   [31m-[0m[0m "STANDARD",
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:                 ] [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m matches_suffix                          = [] [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m no_age                                  = false [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m num_newer_versions                      = 0 [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m send_age_if_zero                        = true [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m send_days_since_custom_time_if_zero     = false [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m send_days_since_noncurrent_time_if_zero = false [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m send_num_newer_versions_if_zero         = false [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m with_state                              = "ARCHIVED" [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:             }
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:         }
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:       [31m-[0m[0m lifecycle_rule {
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:           [31m-[0m[0m action {
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m type = "AbortIncompleteMultipartUpload" [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:             }
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:           [31m-[0m[0m condition {
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m age                                     = 7 [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m days_since_custom_time                  = 0 [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m days_since_noncurrent_time              = 0 [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m matches_prefix                          = [] [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m matches_storage_class                   = [] [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m matches_suffix                          = [] [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m no_age                                  = false [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m num_newer_versions                      = 0 [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m send_age_if_zero                        = true [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m send_days_since_custom_time_if_zero     = false [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m send_days_since_noncurrent_time_if_zero = false [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m send_num_newer_versions_if_zero         = false [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:               [31m-[0m[0m with_state                              = "ANY" [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:             }
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:         }
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66: 
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:       [31m-[0m[0m soft_delete_policy {
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:           [31m-[0m[0m effective_time             = "2025-10-16T10:08:47.343Z" [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:           [31m-[0m[0m retention_duration_seconds = 604800 [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:         }
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66: 
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:       [31m-[0m[0m versioning {
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:           [31m-[0m[0m enabled = false [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:         }
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:     }
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66: 
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66: [1mPlan:[0m 0 to add, 0 to change, 1 to destroy.
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66: [0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66: Changes to Outputs:
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:   [31m-[0m[0m bucket_name      = "custom-test-ik36gz" [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:   [31m-[0m[0m bucket_self_link = "https://www.googleapis.com/storage/v1/b/custom-test-ik36gz" [90m-> null[0m[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:49Z logger.go:66:   [31m-[0m[0m bucket_url       = "gs://custom-test-ik36gz" [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:50Z logger.go:66: [0m[1mmodule.test_bucket.google_storage_bucket.bucket: Refreshing state... [id=test-bucket-devops-sandbox-452616-fa0fdb8d][0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:50Z logger.go:66: [0m[1mgoogle_storage_bucket.bucket: Destroying... [id=custom-test-ik36gz][0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66: 
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66: Terraform used the selected providers to generate the following execution
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66: plan. Resource actions are indicated with the following symbols:
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:   [31m-[0m destroy[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66: 
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66: Terraform will perform the following actions:
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66: 
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66: [1m  # random_id.suffix[0m will be [1m[31mdestroyed[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66: [0m  [31m-[0m[0m resource "random_id" "suffix" {
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m b64_std     = "+g/bjQ==" [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m b64_url     = "-g_bjQ" [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m byte_length = 4 [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m dec         = "4195343245" [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m hex         = "fa0fdb8d" [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m id          = "-g_bjQ" [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:     }
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66: 
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66: [1m  # module.test_bucket.google_storage_bucket.bucket[0m will be [1m[31mdestroyed[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66: [0m  [31m-[0m[0m resource "google_storage_bucket" "bucket" {
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m default_event_based_hold    = false [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m effective_labels            = {
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:           [31m-[0m[0m "environment" = "test"
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:           [31m-[0m[0m "managed_by"  = "terraform"
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:           [31m-[0m[0m "purpose"     = "poc"
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:         } [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m enable_object_retention     = false [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m force_destroy               = false [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m id                          = "test-bucket-devops-sandbox-452616-fa0fdb8d" [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m labels                      = {
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:           [31m-[0m[0m "environment" = "test"
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:           [31m-[0m[0m "managed_by"  = "terraform"
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:           [31m-[0m[0m "purpose"     = "poc"
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:         } [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m location                    = "US" [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m name                        = "test-bucket-devops-sandbox-452616-fa0fdb8d" [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m project                     = "devops-sandbox-452616" [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m project_number              = 209427249385 [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m public_access_prevention    = "enforced" [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m requester_pays              = false [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m rpo                         = "DEFAULT" [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m self_link                   = "https://www.googleapis.com/storage/v1/b/test-bucket-devops-sandbox-452616-fa0fdb8d" [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m storage_class               = "STANDARD" [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m terraform_labels            = {
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:           [31m-[0m[0m "environment" = "test"
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:           [31m-[0m[0m "managed_by"  = "terraform"
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:           [31m-[0m[0m "purpose"     = "poc"
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:         } [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m uniform_bucket_level_access = true [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m url                         = "gs://test-bucket-devops-sandbox-452616-fa0fdb8d" [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66: 
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m lifecycle_rule {
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:           [31m-[0m[0m action {
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m type = "Delete" [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:             }
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:           [31m-[0m[0m condition {
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m age                                     = 30 [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m days_since_custom_time                  = 0 [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m days_since_noncurrent_time              = 0 [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m matches_prefix                          = [] [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m matches_storage_class                   = [] [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m matches_suffix                          = [] [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m no_age                                  = false [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m num_newer_versions                      = 0 [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m send_age_if_zero                        = true [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m send_days_since_custom_time_if_zero     = false [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m send_days_since_noncurrent_time_if_zero = false [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m send_num_newer_versions_if_zero         = false [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m with_state                              = "ANY" [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:             }
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:         }
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m lifecycle_rule {
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:           [31m-[0m[0m action {
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m storage_class = "ARCHIVE" [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m type          = "SetStorageClass" [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:             }
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:           [31m-[0m[0m condition {
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m age                                     = 90 [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m days_since_custom_time                  = 0 [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m days_since_noncurrent_time              = 0 [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m matches_prefix                          = [] [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m matches_storage_class                   = [
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:                   [31m-[0m[0m "STANDARD",
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:                 ] [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m matches_suffix                          = [] [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m no_age                                  = false [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m num_newer_versions                      = 0 [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m send_age_if_zero                        = true [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m send_days_since_custom_time_if_zero     = false [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m send_days_since_noncurrent_time_if_zero = false [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m send_num_newer_versions_if_zero         = false [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m with_state                              = "ARCHIVED" [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:             }
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:         }
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m lifecycle_rule {
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:           [31m-[0m[0m action {
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m type = "AbortIncompleteMultipartUpload" [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:             }
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:           [31m-[0m[0m condition {
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m age                                     = 7 [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m days_since_custom_time                  = 0 [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m days_since_noncurrent_time              = 0 [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m matches_prefix                          = [] [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m matches_storage_class                   = [] [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m matches_suffix                          = [] [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m no_age                                  = false [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m num_newer_versions                      = 0 [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m send_age_if_zero                        = true [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m send_days_since_custom_time_if_zero     = false [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m send_days_since_noncurrent_time_if_zero = false [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m send_num_newer_versions_if_zero         = false [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:               [31m-[0m[0m with_state                              = "ANY" [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:             }
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:         }
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66: 
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m logging {
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:           [31m-[0m[0m log_bucket        = "logs-devops-sandbox-452616" [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:           [31m-[0m[0m log_object_prefix = "test-bucket-devops-sandbox-452616-fa0fdb8d" [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:         }
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66: 
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m soft_delete_policy {
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:           [31m-[0m[0m effective_time             = "2025-10-16T10:08:48.592Z" [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:           [31m-[0m[0m retention_duration_seconds = 604800 [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:         }
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66: 
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:       [31m-[0m[0m versioning {
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:           [31m-[0m[0m enabled = true [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:         }
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:     }
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66: 
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66: [1mPlan:[0m 0 to add, 0 to change, 2 to destroy.
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66: [0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66: Changes to Outputs:
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:   [31m-[0m[0m bucket_name = "test-bucket-devops-sandbox-452616-fa0fdb8d" [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66:   [31m-[0m[0m bucket_url  = "gs://test-bucket-devops-sandbox-452616-fa0fdb8d" [90m-> null[0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:51Z logger.go:66: [0m[1mmodule.test_bucket.google_storage_bucket.bucket: Destroying... [id=test-bucket-devops-sandbox-452616-fa0fdb8d][0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:52Z logger.go:66: [0m[1mmodule.test_bucket.google_storage_bucket.bucket: Destruction complete after 0s[0m
+TestGCSBucketCreation 2025-10-16T10:08:52Z logger.go:66: [0m[1mrandom_id.suffix: Destroying... [id=-g_bjQ][0m[0m
+TestGCSBucketCreation 2025-10-16T10:08:52Z logger.go:66: [0m[1mrandom_id.suffix: Destruction complete after 0s[0m
+TestGCSBucketCreation 2025-10-16T10:08:52Z logger.go:66: [0m[1m[32m
+TestGCSBucketCreation 2025-10-16T10:08:52Z logger.go:66: Destroy complete! Resources: 2 destroyed.
+TestGCSBucketCreation 2025-10-16T10:08:52Z logger.go:66: [0m
+--- PASS: TestGCSBucketCreation (8.73s)
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:52Z logger.go:66: [0m[1mgoogle_storage_bucket.bucket: Destruction complete after 1s[0m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:52Z logger.go:66: [0m[1m[32m
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:52Z logger.go:66: Destroy complete! Resources: 1 destroyed.
+TestGCSBucketWithCustomSettings 2025-10-16T10:08:52Z logger.go:66: [0m
+--- PASS: TestGCSBucketWithCustomSettings (8.93s)
+FAIL
+exit status 1
+FAIL	github.com/intuitivetp/terraform-gcs-poc/tests	14.502s
