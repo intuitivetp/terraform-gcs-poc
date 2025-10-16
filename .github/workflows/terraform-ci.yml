@@ -407,29 +407,93 @@ jobs:
           name: test-results
           path: tests/
 
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
-          service_account: ${{ vars.SERVICE_ACCOUNT_EMAIL }}
+          python-version: '3.11'
 
-      - name: Run Gemini CLI to fix tests
-        uses: google-github-actions/run-gemini-cli@v0.1.13
+      - name: Cache pip
+        uses: actions/cache@v4
         with:
-          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
-          gemini_model: 'gemini-2.0-flash'
-          prompt: |
-            You are an expert in debugging and fixing Terratest failures for GCP infrastructure.
-            
-            Review the test failure logs in ./tests/test_output.log
-            Review the Terraform code in ./modules/ and ./tests/
-            
-            Analyze the failures and fix them by either:
-            1. Correcting the test code in ./tests/
-            2. Fixing the Terraform code in ./modules/ if the infrastructure is misconfigured
-            
-            Apply the fixes directly to the files.
-            Ensure all tests will pass after your fixes.
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-gemini-fix
+
+      - name: Install dependencies
+        run: |
+          pip install google-generativeai
+
+      - name: Fix tests with Gemini (fast)
+        timeout-minutes: 5
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          cat > fix_tests.py << 'PYTHON_SCRIPT'
+          import google.generativeai as genai
+          import os, glob, textwrap
+
+          genai.configure(api_key=os.environ['GEMINI_API_KEY'])
+
+          # Read failing log and current tests
+          log_path = 'tests/test_output.log'
+          log_text = open(log_path, 'r', errors='ignore').read() if os.path.exists(log_path) else ''
+
+          file_paths = sorted(glob.glob('tests/*.go'))
+          files_blob = []
+          total_chars = 0
+          for p in file_paths:
+            src = open(p, 'r', errors='ignore').read()
+            # keep context reasonable (~8k)
+            if total_chars + len(src) > 8000:
+              continue
+            total_chars += len(src)
+            files_blob.append(f"===FILE: {p}===\n{src}")
+
+          prompt = f"""
+          You are an expert in fixing Terratest (Go) tests for Terraform on GCP.
+
+          - The following is the failing test log (trimmed). Identify concrete root causes and propose minimal edits.
+          - Only fix issues that clearly cause the failures (e.g., wrong variables passed to module, missing defer Destroy, wrong assertions, wrong module vars).
+          - Do NOT introduce new dependencies. Keep tests simple and deterministic.
+          - Output ONLY the fully-corrected file contents for the files that require changes, using this exact format:
+            ===FILE: tests/<filename>.go===\n<corrected content>
+          - If no change is needed for a file, do not output it.
+
+          FAIL LOG (trimmed):
+          {log_text[:6000]}
+
+          CURRENT TEST FILES (trimmed):
+          {"\n\n".join(files_blob)}
+          """
+
+          model = genai.GenerativeModel('gemini-2.0-flash')
+          resp = model.generate_content(prompt, generation_config={'temperature': 0.2, 'max_output_tokens': 2048})
+          text = resp.text or ''
+
+          # Parse files from response
+          applied = 0
+          current_file = None
+          buffer = []
+          for line in text.split('\n'):
+            if line.startswith('===FILE:') and line.endswith('==='):
+              if current_file and buffer:
+                with open(current_file, 'w') as f:
+                  f.write('\n'.join(buffer).rstrip() + '\n')
+                applied += 1
+              current_file = line.split('===FILE:')[1].split('===')[0].strip()
+              buffer = []
+            elif current_file:
+              buffer.append(line)
+          if current_file and buffer:
+            with open(current_file, 'w') as f:
+              f.write('\n'.join(buffer).rstrip() + '\n')
+            applied += 1
+
+          print(f"Applied fixes to {applied} files.")
+          if applied == 0:
+            print('No changes suggested by Gemini.')
+          PYTHON_SCRIPT
+
+          python3 fix_tests.py
 
       - name: Commit fixes
         run: |
