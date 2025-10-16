@@ -1,0 +1,16 @@
+graph TD
+
+    User([User]) --> Frontend[Frontend UI]
+    Frontend --> API[API Service]
+    API --> Auth{Authentication}
+    Auth -->|Valid| DB[(Database)]
+    Auth -->|Invalid| Error[Error Response]
+    DB --> Cache[(Cache Layer)]
+    Cache --> API
+    API --> Storage[Document Storage]
+    API --> Logs[Cloud Logging]
+    API --> Metrics[Cloud Monitoring]
+
+    style User fill:#f9f,stroke:#333
+    style Auth fill:#ea4335,stroke:#333,color:#fff
+    style DB fill:#fbbc04,stroke:#333,color:#fff
