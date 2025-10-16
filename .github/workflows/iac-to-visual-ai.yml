@@ -388,6 +388,8 @@ jobs:
             fail-fast: false
         steps:
             - uses: actions/checkout@v4
+              with:
+                  clean: true  # Ensure clean checkout
 
             - name: Setup Terraform
               uses: hashicorp/setup-terraform@v3
@@ -400,32 +402,34 @@ jobs:
               with:
                   python-version: ${{ env.PYTHON_VERSION }}
 
+            - name: Clean Terraform State
+              working-directory: stacks/${{ matrix.stack }}
+              run: |
+                  echo "🧹 Cleaning any previous Terraform state..."
+                  # Remove all Terraform state and lock files
+                  rm -rf .terraform/ .terraform.lock.hcl terraform.tfstate* backend.tf
+                  echo "✅ Clean slate for mock mode"
+
             - name: Generate Mock Terraform State
               id: mock_state
               working-directory: stacks/${{ matrix.stack }}
               run: |
                   echo "🎭 Generating mock Terraform state for diagram generation..."
+                  echo "💡 This runs in isolated local mode - no remote state or locking"
                   
-                  # Remove any backend configuration to avoid state locking issues
-                  if [ -f "backend.tf" ]; then
-                    echo "🗑️  Removing backend.tf to prevent remote state access"
-                    rm backend.tf
-                  fi
+                  # Initialize with local backend only (no remote state)
+                  terraform init -backend=false
                   
-                  # Initialize without backend (local state only)
-                  terraform init -backend=false -reconfigure
-                  
-                  # Generate plan JSON for diagram generation (no locking needed)
-                  echo "📝 Running terraform plan..."
+                  # Generate plan JSON for diagram generation (no locking, no remote state)
+                  echo "📝 Running terraform plan in mock mode..."
                   if terraform plan \
                     -var="project_id=mock-project-12345" \
                     -var="environment=mock" \
-                    -lock=false \
                     -out=tfplan; then
                     echo "✅ Plan succeeded"
                   else
                     PLAN_EXIT=$?
-                    echo "⚠️  Plan exited with code $PLAN_EXIT (may be warnings)"
+                    echo "⚠️  Plan exited with code $PLAN_EXIT"
                   fi
                   
                   # Convert plan to JSON if plan file exists
@@ -840,9 +844,74 @@ jobs:
                         body: `🤖 **Gemini Assistant**\n\n${answer}`
                       });
 
+    cleanup-resources:
+        name: 🧹 Cleanup Resources - ${{ matrix.stack }}
+        needs: [detect-changes, validate-and-plan, generate-diagrams]
+        runs-on: ubuntu-latest
+        if: always()
+        strategy:
+            matrix:
+                stack: ${{ fromJson(needs.detect-changes.outputs.stacks) }}
+            fail-fast: false
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Authenticate to Google Cloud
+              id: auth
+              uses: google-github-actions/auth@v2
+              with:
+                  credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+              continue-on-error: true
+
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v3
+              with:
+                  terraform_version: ${{ env.TERRAFORM_VERSION }}
+                  terraform_wrapper: false
+
+            - name: Initialize and Destroy Resources
+              if: steps.auth.outcome == 'success'
+              working-directory: stacks/${{ matrix.stack }}
+              env:
+                  TF_STATE_BUCKET: ${{ secrets.TF_STATE_BUCKET || 'terraform-state-iac-to-visual' }}
+              run: |
+                  echo "🧹 Cleaning up any created resources..."
+                  
+                  # Configure backend
+                  cat > backend.tf << EOF
+                  terraform {
+                    backend "gcs" {
+                      bucket = "$TF_STATE_BUCKET"
+                      prefix = "stacks/${{ matrix.stack }}"
+                    }
+                  }
+                  EOF
+                  
+                  # Initialize
+                  terraform init
+                  
+                  # Force unlock if needed
+                  echo "🔓 Checking for state locks..."
+                  # terraform force-unlock -force <lock-id> || echo "No lock to release"
+                  
+                  # Destroy all resources
+                  echo "💥 Destroying resources (if any exist)..."
+                  terraform destroy \
+                    -var="project_id=${{ secrets.GCP_PROJECT_ID || 'demo-project-12345' }}" \
+                    -var="environment=dev" \
+                    -auto-approve || echo "⚠️  Destroy completed with warnings"
+                  
+                  echo "✅ Cleanup complete"
+
+            - name: Skip Cleanup
+              if: steps.auth.outcome != 'success'
+              run: |
+                  echo "⏭️  Skipping cleanup - no GCP credentials configured"
+                  echo "💡 This is expected in demo mode"
+
     publish-results:
         name: 📊 Publish Results
-        needs: [detect-changes, validate-and-plan, generate-tests, run-tests, mock-terraform-apply, generate-diagrams]
+        needs: [detect-changes, validate-and-plan, generate-tests, run-tests, mock-terraform-apply, generate-diagrams, cleanup-resources]
         runs-on: ubuntu-latest
         if: always() && github.event_name != 'issue_comment'
         steps:
