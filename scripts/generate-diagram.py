@@ -90,23 +90,32 @@ class TerraformStateParser:
         if "planned_values" in state:
             # This is a plan JSON format
             root_module = state.get("planned_values", {}).get("root_module", {})
-            resources = root_module.get("resources", [])
-            
-            for resource in resources:
-                self._parse_plan_resource(resource)
+            self._parse_module_resources(root_module)
         elif "values" in state:
             # This is a state JSON format  
             root_module = state.get("values", {}).get("root_module", {})
-            resources = root_module.get("resources", [])
-            
-            for resource in resources:
-                self._parse_resource(resource)
+            self._parse_module_resources(root_module, is_plan=False)
         else:
             # Legacy format
             for resource in state.get("resources", []):
                 self._parse_resource(resource)
         
         return self.resources
+    
+    def _parse_module_resources(self, module_data: Dict, is_plan: bool = True):
+        """Recursively parse resources from a module and its child modules"""
+        # Parse resources at this level
+        resources = module_data.get("resources", [])
+        for resource in resources:
+            if is_plan:
+                self._parse_plan_resource(resource)
+            else:
+                self._parse_resource(resource)
+        
+        # Recursively parse child modules
+        child_modules = module_data.get("child_modules", [])
+        for child_module in child_modules:
+            self._parse_module_resources(child_module, is_plan)
     
     def _parse_resource(self, resource_data: Dict):
         """Parse a single resource from state format"""
@@ -255,7 +264,22 @@ class MermaidGenerator:
     
     def _get_node_id(self, address: str) -> str:
         """Convert resource address to valid node ID"""
-        return address.replace(".", "_").replace("-", "_")
+        import re
+        # Extract content from brackets for uniqueness (like ["service_name"])
+        bracket_match = re.search(r'\["([^"]+)"\]', address)
+        suffix = ""
+        if bracket_match:
+            # Get the service name and clean it
+            service_name = bracket_match.group(1)
+            # Take the first part before any dots (e.g., "cloudresourcemanager" from "cloudresourcemanager.googleapis.com")
+            suffix = "_" + service_name.split(".")[0].replace("-", "_")
+        
+        # Remove everything inside brackets
+        clean_address = re.sub(r'\[.*?\]', '', address)
+        # Replace dots and dashes with underscores
+        clean_address = clean_address.replace(".", "_").replace("-", "_")
+        
+        return clean_address + suffix
     
     def _add_inferred_relationships(self, resource: Resource, lines: List[str]):
         """Infer relationships from resource attributes"""

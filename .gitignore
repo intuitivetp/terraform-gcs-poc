@@ -49,3 +49,6 @@ gha-creds-*.json
 # Test artifacts
 *.test
 coverage.out
+tests/test_output.log
+stacks/*/test_diagram*.mmd
+stacks/*/terraform.tfstate.json
