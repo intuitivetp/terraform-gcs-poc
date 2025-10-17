@@ -1,69 +1,10 @@
 graph TB
 
     subgraph Other
-        google_project_service_required_apis_cloudresourcemanager[🔧 Required_Apis]
-        google_project_service_required_apis_compute[🔧 Required_Apis]
-        google_project_service_required_apis_iam[🔧 Required_Apis]
-        google_project_service_required_apis_run[🔧 Required_Apis]
-        google_project_service_required_apis_sql_component[🔧 Required_Apis]
-        google_project_service_required_apis_sqladmin[🔧 Required_Apis]
-        google_project_service_required_apis_storage[🔧 Required_Apis]
-        module_database_google_sql_user_banking_user[🔧 Banking_User]
-        module_database_random_id_db_suffix[🔧 Db_Suffix]
-        module_database_random_password_db_password[🔧 Db_Password]
-        module_frontend_google_storage_bucket_object_index[🔧 Index]
-    end
-
-    subgraph Compute
-        module_backend_google_cloud_run_service_api[🚀 Api]
-    end
-
-    subgraph IAM
-        module_backend_google_cloud_run_service_iam_member_public_access[🔧 Public_Access]
-        module_backend_google_project_iam_member_sql_client[🔧 Sql_Client]
-        module_backend_google_service_account_backend[👤 Backend]
-        module_frontend_google_storage_bucket_iam_member_public_read[🔧 Public_Read]
-        module_storage_google_storage_bucket_iam_member_backend_access[🔧 Backend_Access]
-    end
-
-    subgraph Database
-        module_database_google_sql_database_banking[💾 Banking<br/>banking]
-        module_database_google_sql_database_instance_postgres[🗄️ Postgres]
-    end
-
-    subgraph Storage
-        module_frontend_google_storage_bucket_frontend[📦 Frontend<br/>devops-sandbox-452616-dev-banking-frontend]
-        module_storage_google_storage_bucket_documents[📦 Documents<br/>devops-sandbox-452616-dev-banking-docs]
-    end
-
-    subgraph Monitoring
-        module_monitoring_google_logging_project_sink_banking_logs[📝 Banking_Logs]
-        module_monitoring_google_monitoring_dashboard_banking_dashboard[📊 Banking_Dashboard]
+        google_project_service_required_apis[🔧 Required_Apis]
     end
 
     %% Dependencies
 
     %% Styling
-    style google_project_service_required_apis_cloudresourcemanager fill:#607d8b,stroke:#333,color:#fff
-    style google_project_service_required_apis_compute fill:#607d8b,stroke:#333,color:#fff
-    style google_project_service_required_apis_iam fill:#607d8b,stroke:#333,color:#fff
-    style google_project_service_required_apis_run fill:#607d8b,stroke:#333,color:#fff
-    style google_project_service_required_apis_sql_component fill:#607d8b,stroke:#333,color:#fff
-    style google_project_service_required_apis_sqladmin fill:#607d8b,stroke:#333,color:#fff
-    style google_project_service_required_apis_storage fill:#607d8b,stroke:#333,color:#fff
-    style module_backend_google_cloud_run_service_api fill:#34a853,stroke:#333,color:#fff
-    style module_backend_google_cloud_run_service_iam_member_public_access fill:#ea4335,stroke:#333,color:#fff
-    style module_backend_google_project_iam_member_sql_client fill:#ea4335,stroke:#333,color:#fff
-    style module_backend_google_service_account_backend fill:#ea4335,stroke:#333,color:#fff
-    style module_database_google_sql_database_banking fill:#fbbc04,stroke:#333,color:#fff
-    style module_database_google_sql_database_instance_postgres fill:#fbbc04,stroke:#333,color:#fff
-    style module_database_google_sql_user_banking_user fill:#607d8b,stroke:#333,color:#fff
-    style module_database_random_id_db_suffix fill:#607d8b,stroke:#333,color:#fff
-    style module_database_random_password_db_password fill:#607d8b,stroke:#333,color:#fff
-    style module_frontend_google_storage_bucket_frontend fill:#4285f4,stroke:#333,color:#fff
-    style module_frontend_google_storage_bucket_iam_member_public_read fill:#ea4335,stroke:#333,color:#fff
-    style module_frontend_google_storage_bucket_object_index fill:#607d8b,stroke:#333,color:#fff
-    style module_monitoring_google_logging_project_sink_banking_logs fill:#9c27b0,stroke:#333,color:#fff
-    style module_monitoring_google_monitoring_dashboard_banking_dashboard fill:#9c27b0,stroke:#333,color:#fff
-    style module_storage_google_storage_bucket_documents fill:#4285f4,stroke:#333,color:#fff
-    style module_storage_google_storage_bucket_iam_member_backend_access fill:#ea4335,stroke:#333,color:#fff
+    style google_project_service_required_apis fill:#607d8b,stroke:#333,color:#fff
