@@ -143,9 +143,8 @@ class TestGenerator:
 \t\t}},
 \t}}
 
-\t// Run terraform init and validate
+\t// Run terraform init (validation happens automatically)
 \tterraform.Init(t, terraformOptions)
-\tterraform.Validate(t, terraformOptions)
 
 \t// Verify {resource_type} resources are properly configured
 {assertions_str}

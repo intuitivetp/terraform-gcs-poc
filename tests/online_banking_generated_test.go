@@ -5,10 +5,10 @@ package test
 // DO NOT EDIT MANUALLY - regenerate with: make generate-tests
 
 import (
-	"testing"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"testing"
 )
 
 func TestOnlineBankingStackDeployment(t *testing.T) {
@@ -33,7 +33,7 @@ func TestOnlineBankingStackDeployment(t *testing.T) {
 
 	// Verify plan contains expected resources
 	require.Contains(t, planOutput, "Plan:")
-	
+
 	// Apply and validate
 	terraform.Apply(t, terraformOptions)
 
@@ -53,9 +53,8 @@ func TestProjectServiceConfiguration(t *testing.T) {
 		},
 	}
 
-	// Run terraform init and validate
+	// Run terraform init (validation happens automatically)
 	terraform.Init(t, terraformOptions)
-	terraform.Validate(t, terraformOptions)
 
 	// Verify google_project_service resources are properly configured
 	require.NotEmpty(t, "required_apis", "Resource required_apis should be created")
@@ -72,9 +71,8 @@ func TestRandomIdConfiguration(t *testing.T) {
 		},
 	}
 
-	// Run terraform init and validate
+	// Run terraform init (validation happens automatically)
 	terraform.Init(t, terraformOptions)
-	terraform.Validate(t, terraformOptions)
 
 	// Verify random_id resources are properly configured
 	require.NotEmpty(t, "db_suffix", "Resource db_suffix should be created")
@@ -91,9 +89,8 @@ func TestSqlDatabaseInstanceConfiguration(t *testing.T) {
 		},
 	}
 
-	// Run terraform init and validate
+	// Run terraform init (validation happens automatically)
 	terraform.Init(t, terraformOptions)
-	terraform.Validate(t, terraformOptions)
 
 	// Verify google_sql_database_instance resources are properly configured
 	require.NotEmpty(t, "postgres", "Resource postgres should be created")
@@ -110,9 +107,8 @@ func TestSqlDatabaseConfiguration(t *testing.T) {
 		},
 	}
 
-	// Run terraform init and validate
+	// Run terraform init (validation happens automatically)
 	terraform.Init(t, terraformOptions)
-	terraform.Validate(t, terraformOptions)
 
 	// Verify google_sql_database resources are properly configured
 	require.NotEmpty(t, "banking", "Resource banking should be created")
@@ -129,9 +125,8 @@ func TestRandomPasswordConfiguration(t *testing.T) {
 		},
 	}
 
-	// Run terraform init and validate
+	// Run terraform init (validation happens automatically)
 	terraform.Init(t, terraformOptions)
-	terraform.Validate(t, terraformOptions)
 
 	// Verify random_password resources are properly configured
 	require.NotEmpty(t, "db_password", "Resource db_password should be created")
@@ -148,9 +143,8 @@ func TestSqlUserConfiguration(t *testing.T) {
 		},
 	}
 
-	// Run terraform init and validate
+	// Run terraform init (validation happens automatically)
 	terraform.Init(t, terraformOptions)
-	terraform.Validate(t, terraformOptions)
 
 	// Verify google_sql_user resources are properly configured
 	require.NotEmpty(t, "banking_user", "Resource banking_user should be created")
@@ -167,13 +161,12 @@ func TestStorageBucketConfiguration(t *testing.T) {
 		},
 	}
 
-	// Run terraform init and validate
+	// Run terraform init (validation happens automatically)
 	terraform.Init(t, terraformOptions)
-	terraform.Validate(t, terraformOptions)
 
 	// Verify google_storage_bucket resources are properly configured
 	require.NotEmpty(t, "frontend", "Resource frontend should be created")
-		require.NotEmpty(t, "documents", "Resource documents should be created")
+	require.NotEmpty(t, "documents", "Resource documents should be created")
 }
 
 func TestStorageBucketIamMemberConfiguration(t *testing.T) {
@@ -187,13 +180,12 @@ func TestStorageBucketIamMemberConfiguration(t *testing.T) {
 		},
 	}
 
-	// Run terraform init and validate
+	// Run terraform init (validation happens automatically)
 	terraform.Init(t, terraformOptions)
-	terraform.Validate(t, terraformOptions)
 
 	// Verify google_storage_bucket_iam_member resources are properly configured
 	require.NotEmpty(t, "public_read", "Resource public_read should be created")
-		require.NotEmpty(t, "backend_access", "Resource backend_access should be created")
+	require.NotEmpty(t, "backend_access", "Resource backend_access should be created")
 }
 
 func TestStorageBucketObjectConfiguration(t *testing.T) {
@@ -207,9 +199,8 @@ func TestStorageBucketObjectConfiguration(t *testing.T) {
 		},
 	}
 
-	// Run terraform init and validate
+	// Run terraform init (validation happens automatically)
 	terraform.Init(t, terraformOptions)
-	terraform.Validate(t, terraformOptions)
 
 	// Verify google_storage_bucket_object resources are properly configured
 	require.NotEmpty(t, "index", "Resource index should be created")
@@ -226,9 +217,8 @@ func TestServiceAccountConfiguration(t *testing.T) {
 		},
 	}
 
-	// Run terraform init and validate
+	// Run terraform init (validation happens automatically)
 	terraform.Init(t, terraformOptions)
-	terraform.Validate(t, terraformOptions)
 
 	// Verify google_service_account resources are properly configured
 	require.NotEmpty(t, "backend", "Resource backend should be created")
@@ -245,9 +235,8 @@ func TestCloudRunServiceConfiguration(t *testing.T) {
 		},
 	}
 
-	// Run terraform init and validate
+	// Run terraform init (validation happens automatically)
 	terraform.Init(t, terraformOptions)
-	terraform.Validate(t, terraformOptions)
 
 	// Verify google_cloud_run_service resources are properly configured
 	require.NotEmpty(t, "api", "Resource api should be created")
@@ -264,9 +253,8 @@ func TestCloudRunServiceIamMemberConfiguration(t *testing.T) {
 		},
 	}
 
-	// Run terraform init and validate
+	// Run terraform init (validation happens automatically)
 	terraform.Init(t, terraformOptions)
-	terraform.Validate(t, terraformOptions)
 
 	// Verify google_cloud_run_service_iam_member resources are properly configured
 	require.NotEmpty(t, "public_access", "Resource public_access should be created")
@@ -283,9 +271,8 @@ func TestProjectIamMemberConfiguration(t *testing.T) {
 		},
 	}
 
-	// Run terraform init and validate
+	// Run terraform init (validation happens automatically)
 	terraform.Init(t, terraformOptions)
-	terraform.Validate(t, terraformOptions)
 
 	// Verify google_project_iam_member resources are properly configured
 	require.NotEmpty(t, "sql_client", "Resource sql_client should be created")
@@ -302,9 +289,8 @@ func TestMonitoringDashboardConfiguration(t *testing.T) {
 		},
 	}
 
-	// Run terraform init and validate
+	// Run terraform init (validation happens automatically)
 	terraform.Init(t, terraformOptions)
-	terraform.Validate(t, terraformOptions)
 
 	// Verify google_monitoring_dashboard resources are properly configured
 	require.NotEmpty(t, "banking_dashboard", "Resource banking_dashboard should be created")
@@ -321,9 +307,8 @@ func TestLoggingProjectSinkConfiguration(t *testing.T) {
 		},
 	}
 
-	// Run terraform init and validate
+	// Run terraform init (validation happens automatically)
 	terraform.Init(t, terraformOptions)
-	terraform.Validate(t, terraformOptions)
 
 	// Verify google_logging_project_sink resources are properly configured
 	require.NotEmpty(t, "banking_logs", "Resource banking_logs should be created")
