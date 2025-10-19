@@ -1,0 +1,26 @@
+2025-10-16 Thu | feat(workflow): enhance iac-to-visual-ai workflow with resource analysis and fallback handling
+2025-10-16 Thu | feat(scripts): add force unlock script for Terraform state management
+2025-10-16 Thu | Merge branch 'main' of github.com:intuitivetp/terraform-gcs-poc
+2025-10-16 Thu | feat(workflow): enhance IaC to Visual AI pipeline with resource cleanup and improved state management
+2025-10-16 Thu | refactor(workflow): improve IaC to Visual AI pipeline by enhancing backend handling and plan execution
+2025-10-16 Thu | Merge branch 'main' of github.com:intuitivetp/terraform-gcs-poc
+2025-10-16 Thu | refactor(workflow): enhance IaC to Visual AI pipeline with improved plan handling and documentation
+2025-10-16 Thu | docs(todos): update docs/roadmap.md and docs/demo-playbook.md with recent workflow enhancements and AI self-healing features
+2025-10-16 Thu | refactor(workflow): enhance IaC to Visual AI pipeline with mock Terraform apply and self-healing features
+2025-10-16 Thu | fix: use correct secret name GEMINI_API_KEY
+2025-10-16 Thu | feat: add terraform apply and generate diagrams from actual state
+2025-10-16 Thu | chore: trigger workflow with configured secrets
+2025-10-16 Thu | fix: resolve YAML lint errors in workflow heredoc
+2025-10-16 Thu | feat: configure GCS backend and real diagram generation
+2025-10-16 Thu | fix: resolve filename inconsistency in test generation
+2025-10-16 Thu | fix: remove invalid encryption block from storage module
+2025-10-16 Thu | docs: add PR review and Gemini assistant usage
+2025-10-16 Thu | feat: consolidate workflows and integrate AI features
+2025-10-16 Thu | feat: add AI-powered self-healing to consolidated workflow
+2025-10-16 Thu | fix: correct f-string brace escaping in test generator
+2025-10-16 Thu | fix: terraform formatting for CI/CD pipeline compliance
+2025-10-16 Thu | feat: add Makefile, presentation, quickstart guide, and architecture documentation for IaC-to-Visual Converter
+2025-10-16 Thu | Merge branch 'main' of github.com:intuitivetp/terraform-gcs-poc
+2025-10-16 Thu | feat(docs): add CONTRIBUTING and TODO documents
+2025-10-16 Thu | feat(docs): enhance README and add testing and troubleshooting guides
+2025-10-16 Thu | feat(terraform): merge lifecycle rules feature into main

@@ -1,6 +1,6 @@
 # Testing Guide
 
-This guide covers testing practices, patterns, and best practices for the terraform-gcs-poc project using Terratest.
+This guide covers testing practices, patterns, and best practices for the terraform-gcs-poc project using Terratest. Pair it with `docs/development-guide.md` for repository-wide standards and AI guardrails.
 
 ## Overview
 
@@ -496,4 +496,3 @@ For testing questions or issues:
 - Review existing tests for examples
 - Check [GitHub Issues](https://github.com/intuitivetp/terraform-gcs-poc/issues)
 - Reach out on Slack: #platform-engineering
-

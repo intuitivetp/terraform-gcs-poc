@@ -2,7 +2,7 @@
 
 ## Overview
 
-The IaC-to-Visual pipeline includes **Gemini-powered self-healing** capabilities that automatically detect, analyze, and fix common CI/CD failures.
+The IaC-to-Visual pipeline includes **Gemini-powered self-healing** capabilities that automatically detect, analyze, and fix common CI/CD failures. Pair this guide with `docs/ci-pipeline.md` for the full stage-by-stage workflow view.
 
 ## Features
 
@@ -396,4 +396,3 @@ Monitor API usage:
 **Status**: ✅ Active Feature
 **Last Updated**: 2025-10-16
 **Maintained By**: Platform Engineering Team
-

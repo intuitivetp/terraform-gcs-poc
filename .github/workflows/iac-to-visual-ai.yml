@@ -320,7 +320,8 @@ jobs:
                   # - Regenerate/fix broken tests
                   
                   print("\n✅ Test healing analysis complete")
-                  print("healed=true" >> "$GITHUB_OUTPUT")
+                  PYTHON_SCRIPT
+                  echo "healed=true" >> "$GITHUB_OUTPUT"
                   PYTHON_SCRIPT
 
             - name: Re-run tests after healing
@@ -356,7 +357,7 @@ jobs:
               continue-on-error: true
 
             - name: 🤖 Generate Additional Tests for Coverage Gaps
-              if: steps.coverage.outputs.coverage != '' && steps.coverage.outputs.coverage < '70'
+              if: steps.coverage.outputs.coverage && fromJson(steps.coverage.outputs.coverage) < 70
               env:
                   GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
               run: |
@@ -1084,7 +1085,8 @@ jobs:
                   echo "" >> $GITHUB_STEP_SUMMARY
                   echo "- [View All Artifacts](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
                   echo "- [Pipeline Configuration](.github/workflows/iac-to-visual-ai.yml)" >> $GITHUB_STEP_SUMMARY
-                  echo "- [AI Self-Healing Documentation](./docs/AI-SELF-HEALING.md)" >> $GITHUB_STEP_SUMMARY
+                  echo "- [Documentation Hub](./docs/README.md)" >> $GITHUB_STEP_SUMMARY
+                  echo "- [AI Self-Healing Guide](./docs/AI-SELF-HEALING.md)" >> $GITHUB_STEP_SUMMARY
 
             - name: Upload combined artifacts
               uses: actions/upload-artifact@v4
@@ -1113,4 +1115,3 @@ jobs:
                   echo "  - Validate test coverage improvements"
                   echo "  - Check test healing effectiveness"
                   echo "  - Consider enabling real Terraform apply when ready"
-
