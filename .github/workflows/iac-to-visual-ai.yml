@@ -89,7 +89,7 @@ jobs:
                   
                   stacks = sorted(set(stacks))
                   print(json.dumps(stacks, separators=(",", ":")), end="")
-                  PY
+PY
                   )
                   STACKS=${STACKS//$'\n'/}
                   if [ -z "$STACKS" ] || [ "$STACKS" = "[]" ]; then
@@ -537,7 +537,7 @@ jobs:
                       terraform init -backend=false
                       if terraform plan \
                         -var="project_id=mock-project-12345" \
-                        -var="environment=mock" \
+                        -var="environment=dev" \
                         -out=tfplan; then
                         terraform show -json tfplan > terraform.tfstate.json
                         echo "✅ Plan succeeded"
@@ -568,7 +568,7 @@ jobs:
                           first = config_resources[0]
                           print(f"  - First config resource: {first.get('type', 'unknown')}")
                       Path("resource-count.txt").write_text(str(len(planned_resources)))
-                      PYTHON_ANALYZE
+PYTHON_ANALYZE
                       RESOURCE_COUNT=$(cat resource-count.txt 2>/dev/null || echo "0")
                       rm -f resource-count.txt
                   fi
@@ -631,7 +631,7 @@ jobs:
                           json.dump(state, f, indent=2)
                       
                       print(f"\n✅ Created mock state with {len(resources)} resources from Terraform files")
-                      PYTHON_MOCK
+PYTHON_MOCK
                   
                       RESOURCE_COUNT=$(python3 - <<'PYTHON_COUNT'
                       import json
@@ -639,7 +639,7 @@ jobs:
                       
                       data = json.loads(Path("terraform.tfstate.json").read_text())
                       print(len(data.get("planned_values", {}).get("root_module", {}).get("resources", [])))
-                      PYTHON_COUNT
+PYTHON_COUNT
                       )
                   fi
                   
