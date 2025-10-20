@@ -11,6 +11,7 @@ This stack provisions a complete wealth management application with:
 - **Database**: Cloud SQL PostgreSQL with read replicas
 - **Storage**: GCS buckets for document management
 - **Security**: IAM policies, encryption, VPC configuration
+- **Automation**: GitHub workflow coverage, diagram generation, and self-healing feedback
 - **Monitoring**: Cloud Monitoring and Logging
 
 ## Components
@@ -61,4 +62,3 @@ terraform apply -var="project_id=your-project-id" -var="environment=dev"
 
 Development environment: ~$50-100/month
 Production environment: ~$300-500/month (depending on usage)
-
