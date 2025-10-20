@@ -419,8 +419,17 @@ jobs:
               with:
                   python-version: ${{ env.PYTHON_VERSION }}
 
+            - name: Determine run mode
+              run: |
+                  RUN_REAL_APPLY=$(jq -r '.inputs.run_real_apply // "false"' "$GITHUB_EVENT_PATH")
+                  if [ "$RUN_REAL_APPLY" = "true" ]; then
+                    echo "RUN_REAL_APPLY=true" >> $GITHUB_ENV
+                  else
+                    echo "RUN_REAL_APPLY=false" >> $GITHUB_ENV
+                  fi
+
             - name: Authenticate to Google Cloud
-              if: github.event.inputs.run_real_apply == 'true'
+              if: env.RUN_REAL_APPLY == 'true'
               id: real_auth
               uses: google-github-actions/auth@v2
               with:
@@ -441,7 +450,7 @@ jobs:
                   TF_STATE_BUCKET: ${{ secrets.TF_STATE_BUCKET || 'terraform-state-iac-to-visual' }}
                   REAL_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || '' }}
               run: |
-                  MODE="${{ github.event.inputs.run_real_apply }}"
+                  MODE="${RUN_REAL_APPLY:-false}"
                   if [ "$MODE" = "true" ]; then
                       echo "🚀 Real apply mode enabled – generating Terraform state from GCP."
                       if [ "${{ steps.real_auth.outcome }}" != "success" ]; then
@@ -589,7 +598,7 @@ jobs:
                   data = json.loads(Path("terraform.tfstate.json").read_text())
                   print(len(data.get("planned_values", {}).get("root_module", {}).get("resources", [])))
                   PYTHON_COUNT
-)
+                      )
                   fi
                   
                   if [ -f "terraform.tfstate.json" ]; then
@@ -957,7 +966,7 @@ jobs:
         name: 🧹 Cleanup Resources - ${{ matrix.stack }}
         needs: [detect-changes, validate-and-plan, generate-diagrams]
         runs-on: ubuntu-latest
-        if: always() && github.event.inputs.run_real_apply == 'true'
+        if: always()
         strategy:
             matrix:
                 stack: ${{ fromJson(needs.detect-changes.outputs.stacks) }}
@@ -965,7 +974,17 @@ jobs:
         steps:
             - uses: actions/checkout@v4
 
+            - name: Determine run mode
+              run: |
+                  RUN_REAL_APPLY=$(jq -r '.inputs.run_real_apply // "false"' "$GITHUB_EVENT_PATH")
+                  if [ "$RUN_REAL_APPLY" = "true" ]; then
+                    echo "RUN_REAL_APPLY=true" >> $GITHUB_ENV
+                  else
+                    echo "RUN_REAL_APPLY=false" >> $GITHUB_ENV
+                  fi
+
             - name: Authenticate to Google Cloud
+              if: env.RUN_REAL_APPLY == 'true'
               id: auth
               uses: google-github-actions/auth@v2
               with:
@@ -973,13 +992,14 @@ jobs:
               continue-on-error: true
 
             - name: Setup Terraform
+              if: env.RUN_REAL_APPLY == 'true'
               uses: hashicorp/setup-terraform@v3
               with:
                   terraform_version: ${{ env.TERRAFORM_VERSION }}
                   terraform_wrapper: false
 
             - name: Initialize and Destroy Resources
-              if: steps.auth.outcome == 'success'
+              if: env.RUN_REAL_APPLY == 'true' && steps.auth.outcome == 'success'
               working-directory: stacks/${{ matrix.stack }}
               env:
                   TF_STATE_BUCKET: ${{ secrets.TF_STATE_BUCKET || 'terraform-state-iac-to-visual' }}
@@ -1013,7 +1033,12 @@ jobs:
                   echo "✅ Cleanup complete"
 
             - name: Skip Cleanup
-              if: steps.auth.outcome != 'success'
+              if: env.RUN_REAL_APPLY != 'true'
+              run: |
+                  echo "⏭️  Skipping cleanup - run_real_apply not enabled"
+
+            - name: Report auth failure
+              if: env.RUN_REAL_APPLY == 'true' && steps.auth.outcome != 'success'
               run: |
                   echo "⏭️  Skipping cleanup - no GCP credentials configured"
                   echo "💡 This is expected in demo mode"
@@ -1025,6 +1050,15 @@ jobs:
         if: always() && github.event_name != 'issue_comment'
         steps:
             - uses: actions/checkout@v4
+
+            - name: Determine run mode
+              run: |
+                  RUN_REAL_APPLY=$(jq -r '.inputs.run_real_apply // "false"' "$GITHUB_EVENT_PATH")
+                  if [ "$RUN_REAL_APPLY" = "true" ]; then
+                    echo "RUN_REAL_APPLY=true" >> $GITHUB_ENV
+                  else
+                    echo "RUN_REAL_APPLY=false" >> $GITHUB_ENV
+                  fi
 
             - name: Download all artifacts
               uses: actions/download-artifact@v4
@@ -1065,17 +1099,17 @@ jobs:
                   done
                   
                   if [ "$BUNDLE_CREATED" -eq 1 ]; then
-                      cat > demo-bundle/README.md <<'BUNDLE_DOC'
-# Demo Bundle Contents
-
-This package contains pre-built assets for showcasing the Terraform GCS POC:
-
-- Diagrams rendered from Terraform state (Mermaid `.mmd` and Markdown).
-- Generated Terratest suites that align with the demo stack.
-- Coverage reports with summarized totals.
-
-Each stack has its own subdirectory under this bundle. Unpack and open `diagrams/ARCHITECTURE.md` or `coverage/coverage.html` to walk stakeholders through the results.
-BUNDLE_DOC
+                      cat <<'BUNDLE_DOC' | sed 's/^ *//' > demo-bundle/README.md
+                      # Demo Bundle Contents
+                      
+                      This package contains pre-built assets for showcasing the Terraform GCS POC:
+                      
+                      - Diagrams rendered from Terraform state (Mermaid `.mmd` and Markdown).
+                      - Generated Terratest suites that align with the demo stack.
+                      - Coverage reports with summarized totals.
+                      
+                      Each stack has its own subdirectory under this bundle. Unpack and open `diagrams/ARCHITECTURE.md` or `coverage/coverage.html` to walk stakeholders through the results.
+                      BUNDLE_DOC
                       tar -czf demo-bundle.tar.gz -C demo-bundle .
                       mv demo-bundle.tar.gz artifacts/
                       echo "created=true" >> $GITHUB_OUTPUT
@@ -1089,7 +1123,7 @@ BUNDLE_DOC
                   GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
               run: |
                   MODE_LABEL="Mock Terraform state prep"
-                  if [ "${{ github.event.inputs.run_real_apply }}" = "true" ]; then
+                  if [ "${RUN_REAL_APPLY}" = "true" ]; then
                     MODE_LABEL="Real Terraform apply"
                   fi
                   echo "# 🎨 IaC to Visual Pipeline Results (AI-Enhanced)" >> $GITHUB_STEP_SUMMARY
