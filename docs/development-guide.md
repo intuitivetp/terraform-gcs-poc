@@ -38,3 +38,4 @@ Keep contributions consistent, testable, and demo-ready. This guide combines the
 - Sandbox GCP project: `devops-sandbox-452616`, region `us-central1`; override via workflow inputs or environment variables when pointing at a different project.
 - Authenticate locally with `gcloud auth application-default login` and export `GOOGLE_PROJECT` before running real applies.
 - Remember that GitHub-hosted runners fetch providers dynamically; vendor provider binaries locally only if you need repeatable offline demos.
+- When you need the workflow to perform a real apply/destroy cycle, set the `run_real_apply` dispatch input and ensure `GCP_PROJECT_ID`, `TF_STATE_BUCKET`, and `GCP_CREDENTIALS` secrets are populated.

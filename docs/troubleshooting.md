@@ -412,8 +412,22 @@ Error: Terraform files are not formatted correctly
    #!/bin/bash
    terraform fmt -check -recursive
    EOF
-   chmod +x .git/hooks/pre-commit
-   ```
+  chmod +x .git/hooks/pre-commit
+  ```
+
+### Real Apply Mode Fails Immediately
+
+**Symptoms:**
+- Workflow stops in the “Prepare Terraform State” job with errors about missing credentials, project IDs, or state buckets.
+
+**Solutions:**
+1. Verify workflow inputs: only set `run_real_apply=true` when you intend to deploy to GCP.
+2. Provide required secrets:
+   - `GCP_CREDENTIALS` (service account JSON with appropriate roles)
+   - `GCP_PROJECT_ID` (target project for the apply)
+   - `TF_STATE_BUCKET` (existing GCS bucket for Terraform state)
+3. Confirm the Terraform backend bucket exists and is accessible by the service account.
+4. Trigger the workflow via **Actions → Run workflow** so you can toggle `run_real_apply` explicitly; standard push/PR runs default to mock mode.
 
 ## Getting Help
 
@@ -526,4 +540,3 @@ Don't test in production projects. Use:
 ---
 
 **Still having issues?** Don't hesitate to reach out to the Platform Engineering team on Slack (#platform-engineering) or open a GitHub issue.
-

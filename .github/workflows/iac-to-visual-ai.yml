@@ -26,6 +26,11 @@ on:
                 required: false
                 type: boolean
                 default: true
+            run_real_apply:
+                description: "Run terraform apply/destroy against GCP (requires credentials/state bucket)"
+                required: false
+                type: boolean
+                default: false
 
 env:
     TERRAFORM_VERSION: "1.5.0"
@@ -250,6 +255,8 @@ jobs:
             fail-fast: false
         outputs:
             tests_healed: ${{ steps.heal.outputs.healed }}
+            coverage: ${{ steps.coverage.outputs.coverage }}
+            coverage_threshold: ${{ steps.coverage.outputs.threshold }}
         steps:
             - uses: actions/checkout@v4
 
@@ -356,6 +363,15 @@ jobs:
                   fi
               continue-on-error: true
 
+            - name: Publish coverage summary
+              if: steps.coverage.outputs.coverage
+              run: |
+                  echo "### Coverage Snapshot" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "- Result: ${{ steps.coverage.outputs.coverage }}%" >> $GITHUB_STEP_SUMMARY
+                  echo "- Threshold: ${{ steps.coverage.outputs.threshold }}%" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+
             - name: 🤖 Generate Additional Tests for Coverage Gaps
               if: steps.coverage.outputs.coverage && fromJson(steps.coverage.outputs.coverage) < 70
               env:
@@ -380,7 +396,7 @@ jobs:
                   retention-days: 30
 
     mock-terraform-apply:
-        name: 🎭 Mock Terraform Apply - ${{ matrix.stack }}
+        name: 🎭 Prepare Terraform State - ${{ matrix.stack }}
         needs: [detect-changes, validate-and-plan, run-tests]
         runs-on: ubuntu-latest
         strategy:
@@ -403,109 +419,112 @@ jobs:
               with:
                   python-version: ${{ env.PYTHON_VERSION }}
 
+            - name: Authenticate to Google Cloud
+              if: github.event.inputs.run_real_apply == 'true'
+              id: real_auth
+              uses: google-github-actions/auth@v2
+              with:
+                  credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
             - name: Clean Terraform State
               working-directory: stacks/${{ matrix.stack }}
               run: |
                   echo "🧹 Cleaning any previous Terraform state..."
                   # Remove all Terraform state and lock files
                   rm -rf .terraform/ .terraform.lock.hcl terraform.tfstate* backend.tf
-                  echo "✅ Clean slate for mock mode"
+                  echo "✅ Clean slate for fresh state preparation"
 
-            - name: Generate Mock Terraform State
-              id: mock_state
+            - name: Prepare Terraform State
+              id: prepare_state
               working-directory: stacks/${{ matrix.stack }}
+              env:
+                  TF_STATE_BUCKET: ${{ secrets.TF_STATE_BUCKET || 'terraform-state-iac-to-visual' }}
+                  REAL_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || '' }}
               run: |
-                  echo "🎭 Generating mock Terraform state for diagram generation..."
-                  echo "💡 This runs in isolated local mode - no remote state or locking"
-                  
-                  # Initialize with local backend only (no remote state)
-                  terraform init -backend=false
-                  
-                  # Generate plan JSON for diagram generation (no locking, no remote state)
-                  echo "📝 Running terraform plan in mock mode..."
-                  if terraform plan \
-                    -var="project_id=mock-project-12345" \
-                    -var="environment=mock" \
-                    -out=tfplan; then
-                    echo "✅ Plan succeeded"
+                  MODE="${{ github.event.inputs.run_real_apply }}"
+                  if [ "$MODE" = "true" ]; then
+                      echo "🚀 Real apply mode enabled – generating Terraform state from GCP."
+                      if [ "${{ steps.real_auth.outcome }}" != "success" ]; then
+                          echo "❌ Authentication failed; cannot continue with run_real_apply=true."
+                          exit 1
+                      fi
+                      if [ -z "$REAL_PROJECT_ID" ]; then
+                          echo "❌ Missing GCP_PROJECT_ID secret. Set it before enabling run_real_apply."
+                          exit 1
+                      fi
+                      if [ -z "$TF_STATE_BUCKET" ]; then
+                          echo "❌ TF_STATE_BUCKET secret is required for real apply mode."
+                          exit 1
+                      fi
+                      cat > backend.tf <<EOF
+                  terraform {
+                    backend "gcs" {
+                      bucket = "$TF_STATE_BUCKET"
+                      prefix = "stacks/${{ matrix.stack }}"
+                    }
+                  }
+                  EOF
+                      if ! terraform init; then
+                          echo "❌ terraform init failed in real apply mode."
+                          exit 1
+                      fi
+                      if ! terraform plan \
+                        -var="project_id=$REAL_PROJECT_ID" \
+                        -var="environment=demo" \
+                        -out=tfplan; then
+                        echo "❌ terraform plan failed in real apply mode."
+                        exit 1
+                      fi
+                      if ! terraform apply -auto-approve tfplan; then
+                        echo "❌ terraform apply failed."
+                        exit 1
+                      fi
+                      terraform show -json > terraform.tfstate.json
+                      echo "✅ Captured live state for diagram generation."
                   else
-                    PLAN_EXIT=$?
-                    echo "⚠️  Plan exited with code $PLAN_EXIT"
+                      echo "🎭 Mock mode enabled – generating plan-derived state."
+                      terraform init -backend=false
+                      if terraform plan \
+                        -var="project_id=mock-project-12345" \
+                        -var="environment=mock" \
+                        -out=tfplan; then
+                        terraform show -json tfplan > terraform.tfstate.json
+                        echo "✅ Plan succeeded"
+                      else
+                        PLAN_EXIT=$?
+                        echo "⚠️  Plan exited with code $PLAN_EXIT"
+                      fi
                   fi
                   
-                  # Convert plan to JSON if plan file exists
-                  if [ -f "tfplan" ]; then
-                    echo "📊 Converting plan to JSON..."
-                    terraform show -json tfplan > terraform.tfstate.json
-                    
-                    # Verify we have resources and show structure
-                    echo "🔍 Analyzing plan JSON structure..."
-                    python3 << 'PYTHON_ANALYZE'
+                  RESOURCE_COUNT=0
+                  if [ -f "terraform.tfstate.json" ]; then
+                      python3 <<'PYTHON_ANALYZE'
                   import json
-                  import sys
+                  from pathlib import Path
                   
-                  with open('terraform.tfstate.json', 'r') as f:
-                      data = json.load(f)
+                  data = json.loads(Path("terraform.tfstate.json").read_text())
+                  planned_resources = data.get("planned_values", {}).get("root_module", {}).get("resources", [])
+                  config_resources = data.get("configuration", {}).get("root_module", {}).get("resources", [])
                   
-                  # Check for resources in different locations
-                  planned_resources = data.get('planned_values', {}).get('root_module', {}).get('resources', [])
-                  config_resources = data.get('configuration', {}).get('root_module', {}).get('resources', [])
-                  
-                  print(f"📊 Plan JSON Analysis:")
+                  print("📊 Plan JSON Analysis:")
                   print(f"  - Planned resources: {len(planned_resources)}")
                   print(f"  - Config resources: {len(config_resources)}")
                   print(f"  - Top-level keys: {list(data.keys())}")
-                  
                   if planned_resources:
-                      print(f"  - First planned resource: {planned_resources[0].get('type', 'unknown')}.{planned_resources[0].get('name', 'unknown')}")
+                      first = planned_resources[0]
+                      print(f"  - First planned resource: {first.get('type', 'unknown')}.{first.get('name', 'unknown')}")
                   elif config_resources:
-                      print(f"  - First config resource: {config_resources[0].get('type', 'unknown')}")
-                  
-                  # If no planned resources, try to extract from configuration
-                  if not planned_resources and config_resources:
-                      print("⚠️  No planned resources, extracting from configuration...")
-                      # Convert configuration to planned_values format
-                      converted_resources = []
-                      for res in config_resources:
-                          converted_resources.append({
-                              "address": f"{res.get('type', 'unknown')}.{res.get('name', 'unknown')}",
-                              "mode": res.get('mode', 'managed'),
-                              "type": res.get('type', ''),
-                              "name": res.get('name', ''),
-                              "provider_name": res.get('provider_config_key', 'google'),
-                              "values": res.get('expressions', {})
-                          })
-                      
-                      # Update the JSON to add planned_values
-                      if 'planned_values' not in data:
-                          data['planned_values'] = {}
-                      if 'root_module' not in data['planned_values']:
-                          data['planned_values']['root_module'] = {}
-                      data['planned_values']['root_module']['resources'] = converted_resources
-                      
-                      with open('terraform.tfstate.json', 'w') as f:
-                          json.dump(data, f, indent=2)
-                      
-                      print(f"✅ Converted {len(converted_resources)} resources from configuration to planned_values")
-                  
+                      first = config_resources[0]
+                      print(f"  - First config resource: {first.get('type', 'unknown')}")
+                  Path("resource-count.txt").write_text(str(len(planned_resources)))
                   PYTHON_ANALYZE
-                    
-                    # Re-check resource count after conversion
-                    RESOURCE_COUNT=$(cat terraform.tfstate.json | python3 -c "import sys, json; data=json.load(sys.stdin); print(len(data.get('planned_values', {}).get('root_module', {}).get('resources', [])))" 2>/dev/null || echo "0")
-                    echo "📊 Final resource count: $RESOURCE_COUNT"
-                    
-                    if [ "$RESOURCE_COUNT" -eq 0 ]; then
-                      echo "⚠️  Still no resources found, trying fallback..."
-                    fi
-                  else
-                    echo "❌ No plan file generated"
-                    RESOURCE_COUNT=0
+                      RESOURCE_COUNT=$(cat resource-count.txt 2>/dev/null || echo "0")
+                      rm -f resource-count.txt
                   fi
                   
-                  # Fallback: Parse Terraform files if we have no resources
-                  if [ "$RESOURCE_COUNT" -eq 0 ]; then
-                    echo "🔄 Using fallback: parsing Terraform configuration files..."
-                    python3 << 'PYTHON_MOCK'
+                  if [ "$MODE" != "true" ] && [ "$RESOURCE_COUNT" -eq 0 ]; then
+                      echo "⚠️  No planned resources detected; using configuration fallback parser..."
+                      python3 <<'PYTHON_MOCK'
                   import json
                   import re
                   from pathlib import Path
@@ -519,7 +538,6 @@ jobs:
                       print(f"  - Parsing {tf_file}")
                       content = tf_file.read_text()
                       
-                      # Find all resource blocks with better parsing
                       pattern = r'resource\s+"([^"]+)"\s+"([^"]+)"\s*\{([^}]+(?:\{[^}]*\}[^}]*)*)\}'
                       matches = re.finditer(pattern, content, re.MULTILINE | re.DOTALL)
                       
@@ -528,10 +546,7 @@ jobs:
                           resource_name = match.group(2)
                           resource_body = match.group(3)
                           
-                          # Extract some basic attributes
                           values = {}
-                          
-                          # Try to extract name attribute
                           name_match = re.search(r'name\s*=\s*"([^"]+)"', resource_body)
                           if name_match:
                               values['name'] = name_match.group(1)
@@ -546,7 +561,6 @@ jobs:
                           })
                           print(f"    ✓ Found: {resource_type}.{resource_name}")
                   
-                  # Create proper plan JSON structure
                   state = {
                       "format_version": "1.0",
                       "terraform_version": "1.5.0",
@@ -567,14 +581,27 @@ jobs:
                   
                   print(f"\n✅ Created mock state with {len(resources)} resources from Terraform files")
                   PYTHON_MOCK
+                  
+                      RESOURCE_COUNT=$(python3 - <<'PYTHON_COUNT'
+                  import json
+                  from pathlib import Path
+                  
+                  data = json.loads(Path("terraform.tfstate.json").read_text())
+                  print(len(data.get("planned_values", {}).get("root_module", {}).get("resources", [])))
+                  PYTHON_COUNT
+)
                   fi
                   
-                  echo "✅ Mock state generated for diagram visualization"
-                  ls -lh terraform.tfstate.json
-                  echo "📋 State preview:"
-                  head -20 terraform.tfstate.json
+                  if [ -f "terraform.tfstate.json" ]; then
+                      ls -lh terraform.tfstate.json
+                      echo "📋 State preview:"
+                      head -20 terraform.tfstate.json
+                  else
+                      echo "❌ terraform.tfstate.json is missing after preparation."
+                      exit 1
+                  fi
 
-            - name: Upload mock state JSON
+            - name: Upload state JSON
               uses: actions/upload-artifact@v4
               with:
                   name: tfstate-${{ matrix.stack }}
@@ -930,7 +957,7 @@ jobs:
         name: 🧹 Cleanup Resources - ${{ matrix.stack }}
         needs: [detect-changes, validate-and-plan, generate-diagrams]
         runs-on: ubuntu-latest
-        if: always()
+        if: always() && github.event.inputs.run_real_apply == 'true'
         strategy:
             matrix:
                 stack: ${{ fromJson(needs.detect-changes.outputs.stacks) }}
@@ -1005,10 +1032,66 @@ jobs:
                   path: artifacts/
               continue-on-error: true
 
+            - name: Assemble demo bundle
+              id: bundle
+              run: |
+                  mkdir -p artifacts demo-bundle
+                  BUNDLE_CREATED=0
+                  
+                  for diagrams_dir in artifacts/diagrams-*; do
+                      if [ ! -d "$diagrams_dir" ]; then
+                          continue
+                      fi
+                      stack=${diagrams_dir#artifacts/diagrams-}
+                      BUNDLE_CREATED=1
+                      dest="demo-bundle/$stack"
+                      mkdir -p "$dest"
+                      
+                      cp -R "$diagrams_dir" "$dest/diagrams"
+                      
+                      if [ -d "artifacts/coverage-$stack" ]; then
+                          mkdir -p "$dest/coverage"
+                          cp -R artifacts/coverage-$stack/. "$dest/coverage/"
+                          if [ -f "artifacts/coverage-$stack/coverage.out" ]; then
+                              TOTAL=$(grep -E 'total:' "artifacts/coverage-$stack/coverage.out" | awk '{print $3}')
+                              echo "Coverage: ${TOTAL:-unknown}" > "$dest/coverage/coverage-summary.txt"
+                          fi
+                      fi
+                      
+                      if [ -d "artifacts/tests-$stack" ]; then
+                          mkdir -p "$dest/tests"
+                          cp -R artifacts/tests-$stack/. "$dest/tests/"
+                      fi
+                  done
+                  
+                  if [ "$BUNDLE_CREATED" -eq 1 ]; then
+                      cat > demo-bundle/README.md <<'BUNDLE_DOC'
+# Demo Bundle Contents
+
+This package contains pre-built assets for showcasing the Terraform GCS POC:
+
+- Diagrams rendered from Terraform state (Mermaid `.mmd` and Markdown).
+- Generated Terratest suites that align with the demo stack.
+- Coverage reports with summarized totals.
+
+Each stack has its own subdirectory under this bundle. Unpack and open `diagrams/ARCHITECTURE.md` or `coverage/coverage.html` to walk stakeholders through the results.
+BUNDLE_DOC
+                      tar -czf demo-bundle.tar.gz -C demo-bundle .
+                      mv demo-bundle.tar.gz artifacts/
+                      echo "created=true" >> $GITHUB_OUTPUT
+                  else
+                      echo "No diagrams artifacts found; skipping bundle assembly."
+                      echo "created=false" >> $GITHUB_OUTPUT
+                  fi
+
             - name: Generate AI-Enhanced Summary
               env:
                   GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
               run: |
+                  MODE_LABEL="Mock Terraform state prep"
+                  if [ "${{ github.event.inputs.run_real_apply }}" = "true" ]; then
+                    MODE_LABEL="Real Terraform apply"
+                  fi
                   echo "# 🎨 IaC to Visual Pipeline Results (AI-Enhanced)" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
                   echo "## 📊 Pipeline Execution Order" >> $GITHUB_STEP_SUMMARY
@@ -1016,7 +1099,7 @@ jobs:
                   echo "1. 🔬 Terraform Validation & Planning" >> $GITHUB_STEP_SUMMARY
                   echo "2. 🧪 Test Generation (based on coverage)" >> $GITHUB_STEP_SUMMARY
                   echo "3. 🔧 Test Execution & Healing" >> $GITHUB_STEP_SUMMARY
-                  echo "4. 🎭 Mock Terraform Apply" >> $GITHUB_STEP_SUMMARY
+                  echo "4. 🎭 ${MODE_LABEL}" >> $GITHUB_STEP_SUMMARY
                   echo "5. 🎨 Diagram Generation & Commit" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
                   echo "## 📈 Stage Results" >> $GITHUB_STEP_SUMMARY
@@ -1040,11 +1123,18 @@ jobs:
                   else
                     echo "- ⚠️  Tests executed with some failures" >> $GITHUB_STEP_SUMMARY
                   fi
+                  THRESHOLD="${{ needs.run-tests.outputs.coverage_threshold }}"
+                  if [ -z "$THRESHOLD" ]; then
+                    THRESHOLD="70"
+                  fi
+                  if [ -n "${{ needs.run-tests.outputs.coverage }}" ]; then
+                    echo "  - 📊 Coverage: ${{ needs.run-tests.outputs.coverage }}% (threshold ${THRESHOLD}%)" >> $GITHUB_STEP_SUMMARY
+                  fi
                   
                   if [ "${{ needs.mock-terraform-apply.result }}" = "success" ]; then
-                    echo "- ✅ Mock Terraform apply completed" >> $GITHUB_STEP_SUMMARY
+                    echo "- ✅ ${MODE_LABEL} completed" >> $GITHUB_STEP_SUMMARY
                   else
-                    echo "- ⚠️  Mock apply had issues" >> $GITHUB_STEP_SUMMARY
+                    echo "- ⚠️  ${MODE_LABEL} had issues" >> $GITHUB_STEP_SUMMARY
                   fi
                   
                   if [ "${{ needs.generate-diagrams.result }}" = "success" ]; then
@@ -1077,7 +1167,10 @@ jobs:
                     echo "- 🎨 Architecture diagrams (versioned in repo)" >> $GITHUB_STEP_SUMMARY
                     echo "- 📊 Test coverage reports" >> $GITHUB_STEP_SUMMARY
                     echo "- 🧪 Generated test files" >> $GITHUB_STEP_SUMMARY
-                    echo "- 🎭 Mock Terraform state" >> $GITHUB_STEP_SUMMARY
+                    echo "- 🎭 Terraform state JSON" >> $GITHUB_STEP_SUMMARY
+                    if [ "${{ steps.bundle.outputs.created }}" = "true" ]; then
+                      echo "- 🎁 Demo bundle (diagrams + coverage + tests)" >> $GITHUB_STEP_SUMMARY
+                    fi
                   fi
                   
                   echo "" >> $GITHUB_STEP_SUMMARY
@@ -1087,6 +1180,14 @@ jobs:
                   echo "- [Pipeline Configuration](.github/workflows/iac-to-visual-ai.yml)" >> $GITHUB_STEP_SUMMARY
                   echo "- [Documentation Hub](./docs/README.md)" >> $GITHUB_STEP_SUMMARY
                   echo "- [AI Self-Healing Guide](./docs/AI-SELF-HEALING.md)" >> $GITHUB_STEP_SUMMARY
+
+            - name: Upload demo bundle
+              if: steps.bundle.outputs.created == 'true'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: demo-bundle
+                  path: artifacts/demo-bundle.tar.gz
+                  retention-days: 90
 
             - name: Upload combined artifacts
               uses: actions/upload-artifact@v4

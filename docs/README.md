@@ -22,3 +22,5 @@ This folder collects everything you need to run, explain, and extend the IaC‑t
 - Jump to `docs/demo-playbook.md` for customer-facing walkthroughs.
 - Reference `docs/ci-pipeline.md` whenever you update `.github/workflows/iac-to-visual-ai.yml`.
 - Pair `docs/development-guide.md` and `docs/testing.md` to keep contributions aligned with repo standards.
+- Show up with artifacts in hand? Grab the `demo-bundle` from any workflow run—`docs/demo-playbook.md` explains how to use it in the presentation flow.
+- Planning a real Terraform apply? Follow the guardrails in `docs/ci-pipeline.md` before enabling the `run_real_apply` workflow input.
