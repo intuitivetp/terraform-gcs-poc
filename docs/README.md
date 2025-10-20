@@ -6,6 +6,9 @@ This folder collects everything you need to run, explain, and extend the IaC‑t
 - `docs/getting-started.md` — hands-on quick start for local runs and workflows
 - `docs/demo-playbook.md` — 5-minute demo script with talking points and artifacts
 - `docs/ci-pipeline.md` — GitHub Actions layout, stage responsibilities, and self-heal flow
+- Sample stacks:
+  - `stacks/online-banking` for the retail-banking storyline
+  - `stacks/wealth-management` for advisory/wealth demos reusing the same automation
 
 ## Build & Operate
 - `docs/ARCHITECTURE.md` — system design, components, and generated diagram taxonomy

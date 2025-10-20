@@ -12,6 +12,7 @@ Showcase the IaC-to-Visual experience in five minutes. This script balances comm
 - Run `make clean demo` once before the session to populate diagrams/tests for screenshots.
 - Prepare Mermaid Live Editor or VS Code’s Mermaid preview if you want to render diagrams live.
 - Log in to GitHub and open the latest successful `IaC to Visual Pipeline (AI-Enhanced)` run in a browser tab.
+- Pick your storyline: `stacks/online-banking` (retail banking) or `stacks/wealth-management` (advisory services); both follow the same automated flow.
 - Decide whether you want to highlight a **real** Terraform apply—set the workflow dispatch input `run_real_apply=true` and ensure GCP credentials/state bucket secrets are configured before the meeting.
 
 ## Live Walkthrough (3 minutes)
@@ -47,7 +48,7 @@ Talking points:
 - Show `.github/workflows/iac-to-visual-ai.yml` and call out the stages: detect changes → validate/plan → generate tests → execute tests with coverage → produce diagrams/artifacts → summarize results.
 - Highlight the Gemini self-heal steps that analyze failures and auto-fix safe issues like Terraform formatting.
 - Scroll to the run summary to point out the exact coverage percentage surfaced from the Go tests.
-- In the workflow run UI, grab the ready-made `demo-bundle` artifact—inside you’ll find the latest diagrams, coverage reports, and generated tests packaged for sharing.
+- In the workflow run UI, grab the ready-made `demo-bundle` artifact—inside you’ll find the latest diagrams, coverage reports, and generated tests packaged for sharing; the bundle now surfaces whichever stack you selected.
 
 ## Executive Wrap
 - Phase 1 criteria: 95%+ resource capture, three diagram types, automated tests with coverage percentage called out in CI, GitHub-integrated AI assistance.

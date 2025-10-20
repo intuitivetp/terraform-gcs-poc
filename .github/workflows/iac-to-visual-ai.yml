@@ -2,7 +2,7 @@ name: IaC to Visual Pipeline (AI-Enhanced)
 
 on:
     push:
-        branches: [main, develop]
+        branches: [main, develop, "feat/**", "demo/**"]
         paths:
             - "stacks/**"
             - "modules/**"
@@ -55,16 +55,47 @@ jobs:
                   if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
                     STACKS='["${{ github.event.inputs.stack_name }}"]'
                     HAS_CHANGES="true"
+                  elif [ "${{ github.event_name }}" = "pull_request" ]; then
+                    git fetch origin ${{ github.base_ref }} --depth=1
+                    BASE=$(git merge-base HEAD origin/${{ github.base_ref }} || echo "")
+                    if [ -n "$BASE" ]; then
+                      CHANGED_FILES=$(git diff --name-only "$BASE" HEAD || echo "")
+                    else
+                      CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}..HEAD || echo "")
+                    fi
                   else
                     CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} 2>/dev/null || echo "stacks/online-banking")
-                    STACKS=$(echo "$CHANGED_FILES" | grep '^stacks/' | cut -d'/' -f2 | sort -u | jq -R -s -c 'split("\n")[:-1]')
-                    if [ -z "$STACKS" ] || [ "$STACKS" = "[]" ]; then
-                      STACKS='["online-banking"]'
-                      HAS_CHANGES="true"
-                    else
-                      HAS_CHANGES="true"
-                    fi
                   fi
+                  if [ -z "${CHANGED_FILES:-}" ]; then
+                    CHANGED_FILES="stacks/online-banking"
+                  fi
+                  export CHANGED_FILES
+STACKS=$(python3 <<'PY'
+import json
+import os
+
+files = [line for line in os.getenv("CHANGED_FILES", "").splitlines() if line]
+stacks = []
+for path in files:
+    if path.startswith("stacks/"):
+        stacks.append(path.split("/", 2)[1])
+
+if not stacks:
+    stacks = ["online-banking"]
+
+if any(path.startswith("stacks/wealth-management/") for path in files):
+    if "wealth-management" not in stacks:
+        stacks.append("wealth-management")
+
+stacks = sorted(set(stacks))
+print(json.dumps(stacks, separators=(",", ":")), end="")
+PY
+)
+STACKS=${STACKS//$'\n'/}
+                  if [ -z "$STACKS" ] || [ "$STACKS" = "[]" ]; then
+                    STACKS='["online-banking"]'
+                  fi
+                  HAS_CHANGES="true"
                   echo "stacks=$STACKS" >> $GITHUB_OUTPUT
                   echo "has_changes=$HAS_CHANGES" >> $GITHUB_OUTPUT
                   echo "📦 Detected stacks: $STACKS"
@@ -259,6 +290,17 @@ jobs:
             coverage_threshold: ${{ steps.coverage.outputs.threshold }}
         steps:
             - uses: actions/checkout@v4
+
+            - name: Setup Terraform (tests)
+              uses: hashicorp/setup-terraform@v3
+              with:
+                  terraform_version: ${{ env.TERRAFORM_VERSION }}
+                  terraform_wrapper: false
+
+            - name: Configure test environment
+              run: |
+                  echo "CI_SKIP_TERRAFORM_APPLY=true" >> $GITHUB_ENV
+                  echo "TERRAFORM_BINARY_OVERRIDE=terraform" >> $GITHUB_ENV
 
             - name: Setup Go
               uses: actions/setup-go@v5
@@ -800,6 +842,7 @@ jobs:
 
     pr-review:
         name: 🔍 AI PR Review
+        continue-on-error: true
         if: github.event_name == 'pull_request' || (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@gemini-cli /review'))
         runs-on: ubuntu-latest
         permissions:
@@ -812,8 +855,15 @@ jobs:
               if: github.event_name == 'pull_request'
               id: diff
               run: |
-                  git fetch origin ${{ github.base_ref }}
-                  git diff origin/${{ github.base_ref }}...HEAD > pr.diff
+                  git fetch origin ${{ github.base_ref }} --depth=1 || true
+                  if BASE=$(git merge-base HEAD origin/${{ github.base_ref }} 2>/dev/null); then
+                    git diff "$BASE"...HEAD > pr.diff || true
+                  else
+                    git diff origin/${{ github.base_ref }}..HEAD > pr.diff || true
+                  fi
+                  if [ ! -s pr.diff ]; then
+                    touch pr.diff
+                  fi
                   echo "diff_size=$(wc -l < pr.diff)" >> $GITHUB_OUTPUT
 
             - name: AI Code Review

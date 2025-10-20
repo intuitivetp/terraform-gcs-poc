@@ -1,7 +1,7 @@
 /**
- * Online Banking Stack - Main Configuration
+ * Wealth Management Stack - Main Configuration
  * 
- * This stack provisions a complete multi-tier banking application
+ * This stack provisions a complete multi-tier wealth application
  * demonstrating infrastructure patterns for production workloads.
  */
 
@@ -23,12 +23,12 @@ provider "google" {
 
 # Local variables for resource naming
 locals {
-  app_name = "online-banking"
+  app_name = "wealth-management"
   common_labels = {
     application = local.app_name
     environment = var.environment
     managed_by  = "terraform"
-    stack       = "online-banking"
+    stack       = "wealth-management"
   }
 }
 
@@ -42,9 +42,6 @@ resource "google_project_service" "required_apis" {
     "cloudresourcemanager.googleapis.com",
     "iam.googleapis.com",
     "compute.googleapis.com",
-    "bigquery.googleapis.com",
-    "cloudfunctions.googleapis.com",
-    "cloudbuild.googleapis.com",
   ])
 
   service            = each.value
@@ -108,21 +105,6 @@ module "monitoring" {
   project_id  = var.project_id
   environment = var.environment
   labels      = local.common_labels
-
-  depends_on = [google_project_service.required_apis]
-}
-
-# Analytics: User behavior tracking
-module "analytics" {
-  source = "./modules/analytics"
-
-  project_id  = var.project_id
-  environment = var.environment
-  region      = var.region
-  labels      = local.common_labels
-
-  frontend_bucket = module.frontend.bucket_name
-  backend_service = module.backend.service_url
 
   depends_on = [google_project_service.required_apis]
 }
