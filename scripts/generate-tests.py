@@ -29,6 +29,7 @@ class TestGenerator:
         code_parts = []
         code_parts.append(self._generate_header())
         code_parts.append(self._generate_imports())
+        code_parts.append(self._generate_helpers())
         code_parts.append(self._generate_test_functions(resources))
         
         return "\n\n".join(code_parts)
@@ -62,12 +63,51 @@ class TestGenerator:
     def _generate_imports(self) -> str:
         """Generate import statements"""
         return '''import (
+\t"os"
 \t"testing"
 \t"github.com/gruntwork-io/terratest/modules/terraform"
 \t"github.com/stretchr/testify/assert"
 \t"github.com/stretchr/testify/require"
 )'''
     
+    def _generate_helpers(self) -> str:
+        """Generate shared helper functions"""
+        return '''var terraformBinary = envOrDefault("TERRAFORM_BINARY_OVERRIDE", "terraform")
+
+func envOrDefault(key, fallback string) string {
+\tif val := os.Getenv(key); val != "" {
+\t\treturn val
+\t}
+\treturn fallback
+}
+
+func configureTerraformOptions(opts *terraform.Options) *terraform.Options {
+\tif opts.EnvVars == nil {
+\t\topts.EnvVars = map[string]string{}
+\t}
+\topts.EnvVars["TERRAFORM_BINARY"] = terraformBinary
+\treturn opts
+}
+
+func newTerraformOptions(t *testing.T, withRetry bool) *terraform.Options {
+\tbase := &terraform.Options{
+\t\tTerraformDir: "../stacks/%s",
+\t\tVars: map[string]interface{}{
+\t\t\t"project_id":  "test-project",
+\t\t\t"environment": "dev",
+\t\t},
+\t\tNoColor: true,
+\t}
+\tif withRetry {
+\t\tbase = terraform.WithDefaultRetryableErrors(t, base)
+\t}
+\treturn configureTerraformOptions(base)
+}
+
+func shouldSkipApply() bool {
+\treturn os.Getenv("CI_SKIP_TERRAFORM_APPLY") == "true"
+}''' % self.stack_name
+
     def _generate_test_functions(self, resources: Dict[str, List[str]]) -> str:
         """Generate test functions for each resource type"""
         tests = []
@@ -91,17 +131,11 @@ class TestGenerator:
 \tt.Parallel()
 
 \t// Setup Terraform options
-\tterraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{{
-\t\tTerraformDir: "../stacks/{self.stack_name}",
-\t\tVars: map[string]interface{{}}{{
-\t\t\t"project_id":  "test-project",
-\t\t\t"environment": "dev",
-\t\t}},
-\t\tNoColor: true,
-\t}})
-
-\t// Clean up resources after test
-\tdefer terraform.Destroy(t, terraformOptions)
+\tterraformOptions := newTerraformOptions(t, true)
+\tapplyChanges := !shouldSkipApply()
+\tif applyChanges {{
+\t\tdefer terraform.Destroy(t, terraformOptions)
+\t}}
 
 \t// Run terraform init and plan
 \tterraform.Init(t, terraformOptions)
@@ -109,7 +143,10 @@ class TestGenerator:
 
 \t// Verify plan contains expected resources
 \trequire.Contains(t, planOutput, "Plan:")
-\t
+\tif !applyChanges {{
+\t\treturn
+\t}}
+
 \t// Apply and validate
 \tterraform.Apply(t, terraformOptions)
 
@@ -135,13 +172,7 @@ class TestGenerator:
         return f'''func Test{test_name}Configuration(t *testing.T) {{
 \tt.Parallel()
 
-\tterraformOptions := &terraform.Options{{
-\t\tTerraformDir: "../stacks/{self.stack_name}",
-\t\tVars: map[string]interface{{}}{{
-\t\t\t"project_id":  "test-project",
-\t\t\t"environment": "dev",
-\t\t}},
-\t}}
+\tterraformOptions := newTerraformOptions(t, false)
 
 \t// Run terraform init and validate
 \tterraform.Init(t, terraformOptions)
@@ -206,4 +237,3 @@ def main():
 
 if __name__ == "__main__":
     exit(main())
-
