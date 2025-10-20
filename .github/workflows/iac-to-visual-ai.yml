@@ -1099,23 +1099,13 @@ jobs:
                   done
                   
                   if [ "$BUNDLE_CREATED" -eq 1 ]; then
-                      cat <<'BUNDLE_DOC' | sed 's/^ *//' > demo-bundle/README.md
-                      # Demo Bundle Contents
-                      
-                      This package contains pre-built assets for showcasing the Terraform GCS POC:
-                      
-                      - Diagrams rendered from Terraform state (Mermaid `.mmd` and Markdown).
-                      - Generated Terratest suites that align with the demo stack.
-                      - Coverage reports with summarized totals.
-                      
-                      Each stack has its own subdirectory under this bundle. Unpack and open `diagrams/ARCHITECTURE.md` or `coverage/coverage.html` to walk stakeholders through the results.
-                      BUNDLE_DOC
-                      tar -czf demo-bundle.tar.gz -C demo-bundle .
-                      mv demo-bundle.tar.gz artifacts/
-                      echo "created=true" >> $GITHUB_OUTPUT
+                    python3 -c 'from pathlib import Path; Path("demo-bundle/README.md").write_text("\n".join(["# Demo Bundle Contents", "", "This package contains pre-built assets for showcasing the Terraform GCS POC:", "", "- Diagrams rendered from Terraform state (Mermaid `.mmd` and Markdown).", "- Generated Terratest suites that align with the demo stack.", "- Coverage reports with summarized totals.", "", "Each stack has its own subdirectory under this bundle. Unpack and open `diagrams/ARCHITECTURE.md` or `coverage/coverage.html` to walk stakeholders through the results."]) + "\n")'
+                    tar -czf demo-bundle.tar.gz -C demo-bundle .
+                    mv demo-bundle.tar.gz artifacts/
+                    echo "created=true" >> $GITHUB_OUTPUT
                   else
-                      echo "No diagrams artifacts found; skipping bundle assembly."
-                      echo "created=false" >> $GITHUB_OUTPUT
+                    echo "No diagrams artifacts found; skipping bundle assembly."
+                    echo "created=false" >> $GITHUB_OUTPUT
                   fi
 
             - name: Generate AI-Enhanced Summary
