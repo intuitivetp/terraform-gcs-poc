@@ -50,7 +50,7 @@ go tool cover -html=coverage.out -o coverage.html
 
 ## Trigger The GitHub Workflow
 - Push to `main` or `develop` with Terraform, module, or script changes to run the full `IaC to Visual Pipeline (AI-Enhanced)` workflow automatically.
-- Or run it manually: **Actions → IaC to Visual Pipeline (AI-Enhanced) → Run workflow**, optionally selecting a stack name, toggling self-healing, and setting `run_real_apply=true` when you want Terraform to apply/destroy resources in GCP.
+- Or run it manually: **Actions → IaC to Visual Pipeline (AI-Enhanced) → Run workflow**, optionally selecting a stack name (`online-banking` or `wealth-management`), toggling self-healing, and setting `run_real_apply=true` when you want Terraform to apply/destroy resources in GCP.
 - Download artifacts for diagrams, generated tests, coverage reports, and the curated `demo-bundle` directly from the workflow run summary.
 
 ## Next Steps

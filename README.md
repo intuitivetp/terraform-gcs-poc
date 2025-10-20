@@ -53,6 +53,10 @@ graph TB
 - Pipeline architecture and AI hooks: `docs/ci-pipeline.md`
 - Self-healing deep dive: `docs/AI-SELF-HEALING.md`
 
+## Sample Stacks
+- `stacks/online-banking` – flagship multi-tier retail banking example
+- `stacks/wealth-management` – advisory-focused variant with the same automation patterns
+
 ## Documentation
 - Documentation hub: `docs/README.md`
 - Getting started: `docs/getting-started.md`
