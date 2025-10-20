@@ -71,25 +71,25 @@ jobs:
                   fi
                   export CHANGED_FILES
                   STACKS=$(python3 <<'PY'
-import json
-import os
-
-files = [line for line in os.getenv("CHANGED_FILES", "").splitlines() if line]
-stacks = []
-for path in files:
-    if path.startswith("stacks/"):
-        stacks.append(path.split("/", 2)[1])
-
-if not stacks:
-    stacks = ["online-banking"]
-
-if any(path.startswith("stacks/wealth-management/") for path in files):
-    if "wealth-management" not in stacks:
-        stacks.append("wealth-management")
-
-stacks = sorted(set(stacks))
-print(json.dumps(stacks, separators=(",", ":")), end="")
-PY
+                  import json
+                  import os
+                  
+                  files = [line for line in os.getenv("CHANGED_FILES", "").splitlines() if line]
+                  stacks = []
+                  for path in files:
+                      if path.startswith("stacks/"):
+                          stacks.append(path.split("/", 2)[1])
+                  
+                  if not stacks:
+                      stacks = ["online-banking"]
+                  
+                  if any(path.startswith("stacks/wealth-management/") for path in files):
+                      if "wealth-management" not in stacks:
+                          stacks.append("wealth-management")
+                  
+                  stacks = sorted(set(stacks))
+                  print(json.dumps(stacks, separators=(",", ":")), end="")
+                  PY
                   )
                   STACKS=${STACKS//$'\n'/}
                   if [ -z "$STACKS" ] || [ "$STACKS" = "[]" ]; then
@@ -550,25 +550,25 @@ PY
                   RESOURCE_COUNT=0
                   if [ -f "terraform.tfstate.json" ]; then
                       python3 <<'PYTHON_ANALYZE'
-                  import json
-                  from pathlib import Path
-                  
-                  data = json.loads(Path("terraform.tfstate.json").read_text())
-                  planned_resources = data.get("planned_values", {}).get("root_module", {}).get("resources", [])
-                  config_resources = data.get("configuration", {}).get("root_module", {}).get("resources", [])
-                  
-                  print("📊 Plan JSON Analysis:")
-                  print(f"  - Planned resources: {len(planned_resources)}")
-                  print(f"  - Config resources: {len(config_resources)}")
-                  print(f"  - Top-level keys: {list(data.keys())}")
-                  if planned_resources:
-                      first = planned_resources[0]
-                      print(f"  - First planned resource: {first.get('type', 'unknown')}.{first.get('name', 'unknown')}")
-                  elif config_resources:
-                      first = config_resources[0]
-                      print(f"  - First config resource: {first.get('type', 'unknown')}")
-                  Path("resource-count.txt").write_text(str(len(planned_resources)))
-                  PYTHON_ANALYZE
+                      import json
+                      from pathlib import Path
+                      
+                      data = json.loads(Path("terraform.tfstate.json").read_text())
+                      planned_resources = data.get("planned_values", {}).get("root_module", {}).get("resources", [])
+                      config_resources = data.get("configuration", {}).get("root_module", {}).get("resources", [])
+                      
+                      print("📊 Plan JSON Analysis:")
+                      print(f"  - Planned resources: {len(planned_resources)}")
+                      print(f"  - Config resources: {len(config_resources)}")
+                      print(f"  - Top-level keys: {list(data.keys())}")
+                      if planned_resources:
+                          first = planned_resources[0]
+                          print(f"  - First planned resource: {first.get('type', 'unknown')}.{first.get('name', 'unknown')}")
+                      elif config_resources:
+                          first = config_resources[0]
+                          print(f"  - First config resource: {first.get('type', 'unknown')}")
+                      Path("resource-count.txt").write_text(str(len(planned_resources)))
+                      PYTHON_ANALYZE
                       RESOURCE_COUNT=$(cat resource-count.txt 2>/dev/null || echo "0")
                       rm -f resource-count.txt
                   fi
@@ -576,70 +576,70 @@ PY
                   if [ "$MODE" != "true" ] && [ "$RESOURCE_COUNT" -eq 0 ]; then
                       echo "⚠️  No planned resources detected; using configuration fallback parser..."
                       python3 <<'PYTHON_MOCK'
-                  import json
-                  import re
-                  from pathlib import Path
-                  
-                  resources = []
-                  print("📁 Scanning Terraform files...")
-                  
-                  for tf_file in Path('.').glob('**/*.tf'):
-                      if '.terraform' in str(tf_file):
-                          continue
-                      print(f"  - Parsing {tf_file}")
-                      content = tf_file.read_text()
+                      import json
+                      import re
+                      from pathlib import Path
                       
-                      pattern = r'resource\s+"([^"]+)"\s+"([^"]+)"\s*\{([^}]+(?:\{[^}]*\}[^}]*)*)\}'
-                      matches = re.finditer(pattern, content, re.MULTILINE | re.DOTALL)
+                      resources = []
+                      print("📁 Scanning Terraform files...")
                       
-                      for match in matches:
-                          resource_type = match.group(1)
-                          resource_name = match.group(2)
-                          resource_body = match.group(3)
+                      for tf_file in Path('.').glob('**/*.tf'):
+                          if '.terraform' in str(tf_file):
+                              continue
+                          print(f"  - Parsing {tf_file}")
+                          content = tf_file.read_text()
                           
-                          values = {}
-                          name_match = re.search(r'name\s*=\s*"([^"]+)"', resource_body)
-                          if name_match:
-                              values['name'] = name_match.group(1)
+                          pattern = r'resource\s+"([^"]+)"\s+"([^"]+)"\s*\{([^}]+(?:\{[^}]*\}[^}]*)*)\}'
+                          matches = re.finditer(pattern, content, re.MULTILINE | re.DOTALL)
                           
-                          resources.append({
-                              "address": f"{resource_type}.{resource_name}",
-                              "mode": "managed",
-                              "type": resource_type,
-                              "name": resource_name,
-                              "provider_name": "registry.terraform.io/hashicorp/google",
-                              "values": values
-                          })
-                          print(f"    ✓ Found: {resource_type}.{resource_name}")
-                  
-                  state = {
-                      "format_version": "1.0",
-                      "terraform_version": "1.5.0",
-                      "planned_values": {
-                          "root_module": {
-                              "resources": resources
-                          }
-                      },
-                      "configuration": {
-                          "root_module": {
-                              "resources": resources
+                          for match in matches:
+                              resource_type = match.group(1)
+                              resource_name = match.group(2)
+                              resource_body = match.group(3)
+                              
+                              values = {}
+                              name_match = re.search(r'name\s*=\s*"([^"]+)"', resource_body)
+                              if name_match:
+                                  values['name'] = name_match.group(1)
+                              
+                              resources.append({
+                                  "address": f"{resource_type}.{resource_name}",
+                                  "mode": "managed",
+                                  "type": resource_type,
+                                  "name": resource_name,
+                                  "provider_name": "registry.terraform.io/hashicorp/google",
+                                  "values": values
+                              })
+                              print(f"    ✓ Found: {resource_type}.{resource_name}")
+                      
+                      state = {
+                          "format_version": "1.0",
+                          "terraform_version": "1.5.0",
+                          "planned_values": {
+                              "root_module": {
+                                  "resources": resources
+                              }
+                          },
+                          "configuration": {
+                              "root_module": {
+                                  "resources": resources
+                              }
                           }
                       }
-                  }
-                  
-                  with open('terraform.tfstate.json', 'w') as f:
-                      json.dump(state, f, indent=2)
-                  
-                  print(f"\n✅ Created mock state with {len(resources)} resources from Terraform files")
-                  PYTHON_MOCK
+                      
+                      with open('terraform.tfstate.json', 'w') as f:
+                          json.dump(state, f, indent=2)
+                      
+                      print(f"\n✅ Created mock state with {len(resources)} resources from Terraform files")
+                      PYTHON_MOCK
                   
                       RESOURCE_COUNT=$(python3 - <<'PYTHON_COUNT'
-                  import json
-                  from pathlib import Path
-                  
-                  data = json.loads(Path("terraform.tfstate.json").read_text())
-                  print(len(data.get("planned_values", {}).get("root_module", {}).get("resources", [])))
-                  PYTHON_COUNT
+                      import json
+                      from pathlib import Path
+                      
+                      data = json.loads(Path("terraform.tfstate.json").read_text())
+                      print(len(data.get("planned_values", {}).get("root_module", {}).get("resources", [])))
+                      PYTHON_COUNT
                       )
                   fi
                   
