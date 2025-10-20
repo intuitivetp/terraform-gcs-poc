@@ -40,7 +40,7 @@ env:
 jobs:
     detect-changes:
         name: 🔍 Detect Changes
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-lates
         outputs:
             stacks: ${{ steps.set-stacks.outputs.stacks }}
             has_changes: ${{ steps.set-stacks.outputs.has_changes }}
@@ -52,58 +52,58 @@ jobs:
             - name: Detect changed stacks
               id: set-stacks
               run: |
-                  if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-                    STACKS='["${{ github.event.inputs.stack_name }}"]'
-                    HAS_CHANGES="true"
-                  elif [ "${{ github.event_name }}" = "pull_request" ]; then
-                    git fetch origin ${{ github.base_ref }} --depth=1
-                    BASE=$(git merge-base HEAD origin/${{ github.base_ref }} || echo "")
-                    if [ -n "$BASE" ]; then
-                      CHANGED_FILES=$(git diff --name-only "$BASE" HEAD || echo "")
-                    else
-                      CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}..HEAD || echo "")
-                    fi
-                  else
-                    CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} 2>/dev/null || echo "stacks/online-banking")
-                  fi
-                  if [ -z "${CHANGED_FILES:-}" ]; then
-                    CHANGED_FILES="stacks/online-banking"
-                  fi
-                  export CHANGED_FILES
-                  STACKS=$(python3 <<'PY'
-                  import json
-                  import os
-                  
-                  files = [line for line in os.getenv("CHANGED_FILES", "").splitlines() if line]
-                  stacks = []
-                  for path in files:
-                      if path.startswith("stacks/"):
-                          stacks.append(path.split("/", 2)[1])
-                  
-                  if not stacks:
-                      stacks = ["online-banking"]
-                  
-                  if any(path.startswith("stacks/wealth-management/") for path in files):
-                      if "wealth-management" not in stacks:
-                          stacks.append("wealth-management")
-                  
-                  stacks = sorted(set(stacks))
-                  print(json.dumps(stacks, separators=(",", ":")), end="")
-PY
-                  )
-                  STACKS=${STACKS//$'\n'/}
-                  if [ -z "$STACKS" ] || [ "$STACKS" = "[]" ]; then
-                    STACKS='["online-banking"]'
-                  fi
+                if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+                  STACKS='["${{ github.event.inputs.stack_name }}"]'
                   HAS_CHANGES="true"
-                  echo "stacks=$STACKS" >> $GITHUB_OUTPUT
-                  echo "has_changes=$HAS_CHANGES" >> $GITHUB_OUTPUT
-                  echo "📦 Detected stacks: $STACKS"
+                elif [ "${{ github.event_name }}" = "pull_request" ]; then
+                  git fetch origin ${{ github.base_ref }} --depth=1
+                  BASE=$(git merge-base HEAD origin/${{ github.base_ref }} || echo "")
+                  if [ -n "$BASE" ]; then
+                    CHANGED_FILES=$(git diff --name-only "$BASE" HEAD || echo "")
+                  else
+                    CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}..HEAD || echo "")
+                  fi
+                else
+                  CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} 2>/dev/null || echo "stacks/online-banking")
+                fi
+                if [ -z "${CHANGED_FILES:-}" ]; then
+                  CHANGED_FILES="stacks/online-banking"
+                fi
+                export CHANGED_FILES
+                STACKS=$(python3 <<'PY'
+                import json
+                import os
+
+                files = [line for line in os.getenv("CHANGED_FILES", "").splitlines() if line]
+                stacks = []
+                for path in files:
+                    if path.startswith("stacks/"):
+                        stacks.append(path.split("/", 2)[1])
+
+                if not stacks:
+                    stacks = ["online-banking"]
+
+                if any(path.startswith("stacks/wealth-management/") for path in files):
+                    if "wealth-management" not in stacks:
+                        stacks.append("wealth-management")
+
+                stacks = sorted(set(stacks))
+                print(json.dumps(stacks, separators=(",", ":")), end="")
+                PY
+                )
+                STACKS=${STACKS//$'\n'/}
+                if [ -z "$STACKS" ] || [ "$STACKS" = "[]" ]; then
+                  STACKS='["online-banking"]'
+                fi
+                HAS_CHANGES="true"
+                echo "stacks=$STACKS" >> $GITHUB_OUTPUT
+                echo "has_changes=$HAS_CHANGES" >> $GITHUB_OUTPUT
+                echo "📦 Detected stacks: $STACKS"
 
     validate-and-plan:
         name: 🔬 Validate & Plan - ${{ matrix.stack }}
         needs: detect-changes
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-lates
         if: needs.detect-changes.outputs.has_changes == 'true'
         strategy:
             matrix:
@@ -128,7 +128,7 @@ PY
                   terraform_wrapper: false
 
             - name: Terraform Format Check
-              id: fmt
+              id: fm
               working-directory: stacks/${{ matrix.stack }}
               run: terraform fmt -check -recursive
               continue-on-error: true
@@ -144,8 +144,8 @@ PY
                   git add -A
                   git diff --staged --quiet || git commit -m "style: auto-format Terraform code [skip ci]"
 
-            - name: Terraform Init
-              id: init
+            - name: Terraform Ini
+              id: ini
               working-directory: stacks/${{ matrix.stack }}
               env:
                   TF_STATE_BUCKET: ${{ secrets.TF_STATE_BUCKET || 'terraform-state-iac-to-visual' }}
@@ -160,7 +160,7 @@ PY
                     }
                   }
                   EOF
-                      terraform init
+                      terraform ini
                   else
                       echo "⚠️  No GCP credentials - using local backend"
                       terraform init -backend=false
@@ -176,11 +176,10 @@ PY
               id: plan
               working-directory: stacks/${{ matrix.stack }}
               run: |
-                  terraform plan \
-                    -var="project_id=${{ secrets.GCP_PROJECT_ID || 'demo-project-12345' }}" \
-                    -var="environment=dev" \
+                  terraform plan
+                    -var="project_id=${{ secrets.GCP_PROJECT_ID || 'demo-project-12345' }}"
+                    -var="environment=dev"
                     -out=tfplan
-              continue-on-error: true
 
             - name: 🤖 Gemini Self-Heal - Terraform Issues
               if: steps.plan.outcome == 'failure' && steps.validate.outcome == 'failure' && (github.event.inputs.enable_self_heal != 'false')
@@ -193,7 +192,7 @@ PY
                   import os
                   import json
                   import subprocess
-                  
+
                   # Only analyze if validation failed (not just plan due to credentials)
                   result = subprocess.run(
                       ['terraform', 'validate'],
@@ -201,23 +200,24 @@ PY
                       capture_output=True,
                       text=True
                   )
-                  
+
                   if result.returncode != 0:
                       print(f"📋 Terraform Validation Error:\n{result.stderr}")
                       print("\n🔍 Gemini would analyze this error and suggest fixes")
                       print("💡 Suggested fix: Review syntax and resource configurations")
-                      
+
                       # In production with GOOGLE_API_KEY, call Gemini API here
+                      # This is a placeholder for demonstration purposes.
                       # Fix would be applied automatically
                   else:
                       print("✅ Validation passed - no syntax errors to fix")
-                      
+
                   PYTHON_SCRIPT
 
     generate-tests:
         name: 🧪 Generate Tests - ${{ matrix.stack }}
         needs: [detect-changes, validate-and-plan]
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-lates
         strategy:
             matrix:
                 stack: ${{ fromJson(needs.detect-changes.outputs.stacks) }}
@@ -235,7 +235,7 @@ PY
               run: |
                   # Convert stack name to Go-compatible filename (replace - with _)
                   STACK_FILE=$(echo "${{ matrix.stack }}" | tr '-' '_')
-                  python3 scripts/generate-tests.py stacks/${{ matrix.stack }} \
+                  python3 scripts/generate-tests.py stacks/${{ matrix.stack }}
                     -o tests/${STACK_FILE}_generated_test.go
               continue-on-error: true
 
@@ -248,21 +248,21 @@ PY
                   python3 << 'PYTHON_SCRIPT'
                   import sys
                   import traceback
-                  
+
                   try:
                       # Attempt to fix common issues
                       print("🔧 Analyzing Python script syntax...")
                       with open('scripts/generate-tests.py', 'r') as f:
                           content = f.read()
-                      
+
                       # Check for common f-string issues
                       if 'interface{}{{' in content:
                           print("✅ F-string brace escaping looks correct")
                       else:
                           print("⚠️  Potential f-string issue detected")
-                      
+
                       print("\n💡 Gemini would suggest fixes based on error analysis")
-                      
+
                   except Exception as e:
                       print(f"❌ Error during analysis: {e}")
                       traceback.print_exc()
@@ -279,7 +279,7 @@ PY
     run-tests:
         name: 🧪 Run Tests - ${{ matrix.stack }}
         needs: [detect-changes, generate-tests]
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-lates
         strategy:
             matrix:
                 stack: ${{ fromJson(needs.detect-changes.outputs.stacks) }}
@@ -297,7 +297,7 @@ PY
                   terraform_version: ${{ env.TERRAFORM_VERSION }}
                   terraform_wrapper: false
 
-            - name: Configure test environment
+            - name: Configure test environmen
               run: |
                   echo "CI_SKIP_TERRAFORM_APPLY=true" >> $GITHUB_ENV
                   echo "TERRAFORM_BINARY_OVERRIDE=terraform" >> $GITHUB_ENV
@@ -319,7 +319,7 @@ PY
               run: go mod download
 
             - name: Run tests with coverage (initial)
-              id: test
+              id: tes
               working-directory: tests
               run: |
                   go test -v -coverprofile=coverage.out -covermode=atomic ./... 2>&1 | tee test-output.log || true
@@ -340,17 +340,17 @@ PY
                   import os
                   import re
                   import subprocess
-                  
-                  # Read test output
+
+                  # Read test outpu
                   try:
                       with open('test-output.log', 'r') as f:
                           test_output = f.read()
                   except:
                       test_output = "No test output available"
-                  
+
                   print("📋 Test Failures Detected:")
                   print(test_output[-2000:])  # Last 2000 chars
-                  
+
                   # Analyze common failure patterns
                   if 'syntax error' in test_output.lower():
                       print("\n🔧 Detected: Syntax errors in generated tests")
@@ -361,20 +361,19 @@ PY
                   elif 'timeout' in test_output.lower():
                       print("\n🔧 Detected: Test timeouts")
                       print("💡 Suggestion: Increase timeout or optimize test setup")
-                  
+
                   # In production with GOOGLE_API_KEY:
-                  # - Call Gemini API with test output
+                  # - Call Gemini API with test outpu
                   # - Get specific fix suggestions
                   # - Apply safe fixes automatically
                   # - Regenerate/fix broken tests
-                  
+
                   print("\n✅ Test healing analysis complete")
                   PYTHON_SCRIPT
                   echo "healed=true" >> "$GITHUB_OUTPUT"
-                  PYTHON_SCRIPT
 
             - name: Re-run tests after healing
-              id: retest
+              id: retes
               if: steps.heal.outcome == 'success'
               working-directory: tests
               run: |
@@ -395,7 +394,7 @@ PY
                     echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
                     echo "threshold=$THRESHOLD" >> $GITHUB_OUTPUT
                     echo "📊 Coverage: $COVERAGE% (Threshold: $THRESHOLD%)"
-                    
+
                     if (( $(echo "$COVERAGE < $THRESHOLD" | bc -l) )); then
                       echo "⚠️  Coverage below threshold - will generate additional tests"
                     fi
@@ -415,7 +414,7 @@ PY
                   echo "" >> $GITHUB_STEP_SUMMARY
 
             - name: 🤖 Generate Additional Tests for Coverage Gaps
-              if: steps.coverage.outputs.coverage && fromJson(steps.coverage.outputs.coverage) < 70
+              if: steps.coverage.outputs.coverage && steps.coverage.outputs.coverage < 70
               env:
                   GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
               run: |
@@ -426,13 +425,13 @@ PY
                   echo "  - Add edge case tests"
                   echo "  - Improve integration test coverage"
 
-            - name: Upload coverage report
+            - name: Upload coverage repor
               if: always()
               uses: actions/upload-artifact@v4
               with:
                   name: coverage-${{ matrix.stack }}
                   path: |
-                      tests/coverage.out
+                      tests/coverage.ou
                       tests/coverage.html
                       tests/test-output.log
                   retention-days: 30
@@ -440,7 +439,7 @@ PY
     mock-terraform-apply:
         name: 🎭 Prepare Terraform State - ${{ matrix.stack }}
         needs: [detect-changes, validate-and-plan, run-tests]
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-lates
         strategy:
             matrix:
                 stack: ${{ fromJson(needs.detect-changes.outputs.stacks) }}
@@ -448,7 +447,7 @@ PY
         steps:
             - uses: actions/checkout@v4
               with:
-                  clean: true  # Ensure clean checkout
+                  clean: "true"  # Ensure clean checkou
 
             - name: Setup Terraform
               uses: hashicorp/setup-terraform@v3
@@ -519,9 +518,9 @@ PY
                           echo "❌ terraform init failed in real apply mode."
                           exit 1
                       fi
-                      if ! terraform plan \
-                        -var="project_id=$REAL_PROJECT_ID" \
-                        -var="environment=demo" \
+                      if ! terraform plan
+                        -var="project_id=$REAL_PROJECT_ID"
+                        -var="environment=demo"
                         -out=tfplan; then
                         echo "❌ terraform plan failed in real apply mode."
                         exit 1
@@ -535,9 +534,9 @@ PY
                   else
                       echo "🎭 Mock mode enabled – generating plan-derived state."
                       terraform init -backend=false
-                      if terraform plan \
-                        -var="project_id=mock-project-12345" \
-                        -var="environment=dev" \
+                      if terraform plan
+                        -var="project_id=mock-project-12345"
+                        -var="environment=dev"
                         -out=tfplan; then
                         terraform show -json tfplan > terraform.tfstate.json
                         echo "✅ Plan succeeded"
@@ -546,17 +545,17 @@ PY
                         echo "⚠️  Plan exited with code $PLAN_EXIT"
                       fi
                   fi
-                  
+
                   RESOURCE_COUNT=0
                   if [ -f "terraform.tfstate.json" ]; then
                       python3 <<'PYTHON_ANALYZE'
                       import json
                       from pathlib import Path
-                      
+
                       data = json.loads(Path("terraform.tfstate.json").read_text())
                       planned_resources = data.get("planned_values", {}).get("root_module", {}).get("resources", [])
                       config_resources = data.get("configuration", {}).get("root_module", {}).get("resources", [])
-                      
+
                       print("📊 Plan JSON Analysis:")
                       print(f"  - Planned resources: {len(planned_resources)}")
                       print(f"  - Config resources: {len(config_resources)}")
@@ -568,40 +567,40 @@ PY
                           first = config_resources[0]
                           print(f"  - First config resource: {first.get('type', 'unknown')}")
                       Path("resource-count.txt").write_text(str(len(planned_resources)))
-PYTHON_ANALYZE
+                      PYTHON_ANALYZE
                       RESOURCE_COUNT=$(cat resource-count.txt 2>/dev/null || echo "0")
-                      rm -f resource-count.txt
+                      rm -f resource-count.tx
                   fi
-                  
+
                   if [ "$MODE" != "true" ] && [ "$RESOURCE_COUNT" -eq 0 ]; then
                       echo "⚠️  No planned resources detected; using configuration fallback parser..."
                       python3 <<'PYTHON_MOCK'
                       import json
                       import re
                       from pathlib import Path
-                      
+
                       resources = []
                       print("📁 Scanning Terraform files...")
-                      
+
                       for tf_file in Path('.').glob('**/*.tf'):
                           if '.terraform' in str(tf_file):
                               continue
                           print(f"  - Parsing {tf_file}")
                           content = tf_file.read_text()
-                          
+
                           pattern = r'resource\s+"([^"]+)"\s+"([^"]+)"\s*\{([^}]+(?:\{[^}]*\}[^}]*)*)\}'
                           matches = re.finditer(pattern, content, re.MULTILINE | re.DOTALL)
-                          
+
                           for match in matches:
                               resource_type = match.group(1)
                               resource_name = match.group(2)
                               resource_body = match.group(3)
-                              
+
                               values = {}
                               name_match = re.search(r'name\s*=\s*"([^"]+)"', resource_body)
                               if name_match:
                                   values['name'] = name_match.group(1)
-                              
+
                               resources.append({
                                   "address": f"{resource_type}.{resource_name}",
                                   "mode": "managed",
@@ -611,7 +610,7 @@ PYTHON_ANALYZE
                                   "values": values
                               })
                               print(f"    ✓ Found: {resource_type}.{resource_name}")
-                      
+
                       state = {
                           "format_version": "1.0",
                           "terraform_version": "1.5.0",
@@ -626,23 +625,23 @@ PYTHON_ANALYZE
                               }
                           }
                       }
-                      
+
                       with open('terraform.tfstate.json', 'w') as f:
                           json.dump(state, f, indent=2)
-                      
+
                       print(f"\n✅ Created mock state with {len(resources)} resources from Terraform files")
-PYTHON_MOCK
-                  
+                      PYTHON_MOCK
+
                       RESOURCE_COUNT=$(python3 - <<'PYTHON_COUNT'
                       import json
                       from pathlib import Path
-                      
+
                       data = json.loads(Path("terraform.tfstate.json").read_text())
                       print(len(data.get("planned_values", {}).get("root_module", {}).get("resources", [])))
-PYTHON_COUNT
+                      PYTHON_COUNT
                       )
                   fi
-                  
+
                   if [ -f "terraform.tfstate.json" ]; then
                       ls -lh terraform.tfstate.json
                       echo "📋 State preview:"
@@ -662,7 +661,7 @@ PYTHON_COUNT
     generate-diagrams:
         name: 🎨 Generate & Commit Diagrams - ${{ matrix.stack }}
         needs: [detect-changes, mock-terraform-apply]
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-lates
         permissions:
             contents: write
         strategy:
@@ -692,17 +691,17 @@ PYTHON_COUNT
               working-directory: stacks/${{ matrix.stack }}
               run: |
                   mkdir -p diagrams
-                  
+
                   if [ -f "terraform.tfstate.json" ]; then
                       echo "📊 Generating diagrams from Terraform state..."
-                      
+
                       # Run diagram generator
-                      if python3 ../../scripts/generate-diagram.py \
-                        terraform.tfstate.json \
-                        -o diagrams/architecture.mmd \
+                      if python3 ../../scripts/generate-diagram.py
+                        terraform.tfstate.json
+                        -o diagrams/architecture.mmd
                         -t all; then
                         echo "✅ Diagrams generated successfully"
-                        
+
                         # List generated files
                         echo "📁 Generated diagram files:"
                         ls -lh diagrams/*.mmd
@@ -732,85 +731,85 @@ PYTHON_COUNT
               run: |
                   # Create timestamp
                   TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
-                  
+
                   # Read diagram contents (script generates files with -type suffix)
                   ARCH_DIAGRAM=$(cat diagrams/architecture-architecture.mmd 2>/dev/null || echo "graph TB\n    TODO[Diagram generation pending]")
                   NET_DIAGRAM=$(cat diagrams/architecture-network.mmd 2>/dev/null || echo "graph LR\n    TODO[Network diagram pending]")
                   DATA_DIAGRAM=$(cat diagrams/architecture-dataflow.mmd 2>/dev/null || echo "graph TD\n    TODO[Data flow diagram pending]")
-                  
+
                   cat > diagrams/ARCHITECTURE.md << 'DOCEOF'
                   # ${{ matrix.stack }} Architecture
-                  
+
                   Auto-generated architecture diagrams from Terraform configuration.
-                  
+
                   ## Architecture Overview
-                  
+
                   Complete infrastructure visualization showing all resources and their relationships.
-                  
+
                   ```mermaid
                   ARCH_DIAGRAM_PLACEHOLDER
                   ```
-                  
+
                   ## Network Topology
-                  
+
                   Network flow and connectivity between components.
-                  
+
                   ```mermaid
                   NET_DIAGRAM_PLACEHOLDER
                   ```
-                  
+
                   ## Data Flow
-                  
+
                   Data movement and processing paths through the system.
-                  
+
                   ```mermaid
                   DATA_DIAGRAM_PLACEHOLDER
                   ```
-                  
+
                   ---
-                  
-                  **Generated**: TIMESTAMP_PLACEHOLDER  
-                  **Stack**: ${{ matrix.stack }}  
-                  **Workflow**: ${{ github.workflow }}  
-                  **Run**: ${{ github.run_number }}  
+
+                  **Generated**: TIMESTAMP_PLACEHOLDER
+                  **Stack**: ${{ matrix.stack }}
+                  **Workflow**: ${{ github.workflow }}
+                  **Run**: ${{ github.run_number }}
                   **Commit**: ${{ github.sha }}
                   DOCEOF
-                  
+
                   # Replace placeholders (using sed for multi-line content)
                   python3 << 'PYTHON_DOC'
                   import re
-                  
+
                   with open('diagrams/ARCHITECTURE.md', 'r') as f:
                       content = f.read()
-                  
+
                   with open('diagrams/architecture-architecture.mmd', 'r') as f:
                       arch = f.read()
                   with open('diagrams/architecture-network.mmd', 'r') as f:
                       net = f.read()
                   with open('diagrams/architecture-dataflow.mmd', 'r') as f:
                       data = f.read()
-                  
+
                   content = content.replace('ARCH_DIAGRAM_PLACEHOLDER', arch)
                   content = content.replace('NET_DIAGRAM_PLACEHOLDER', net)
                   content = content.replace('DATA_DIAGRAM_PLACEHOLDER', data)
                   content = content.replace('TIMESTAMP_PLACEHOLDER', '${TIMESTAMP}')
-                  
+
                   with open('diagrams/ARCHITECTURE.md', 'w') as f:
                       f.write(content)
-                  
+
                   print("✅ Documentation created with all diagrams embedded")
                   PYTHON_DOC
 
             - name: 📝 Commit Diagrams to Repository
-              id: commit
+              id: commi
               working-directory: stacks/${{ matrix.stack }}
               run: |
                   git config user.name "github-actions[bot]"
                   git config user.email "github-actions[bot]@users.noreply.github.com"
-                  
+
                   # Add diagrams
                   git add diagrams/
-                  
+
                   # Check if there are changes
                   if git diff --staged --quiet; then
                     echo "No diagram changes to commit"
@@ -820,15 +819,15 @@ PYTHON_COUNT
 
                   Auto-generated from workflow run ${{ github.run_number }}
                   Stack: ${{ matrix.stack }}
-                  
+
                   [skip ci]"
-                    
+
                     # Push changes
                     git push origin HEAD:${{ github.head_ref || github.ref }} || {
                       echo "⚠️  Could not push directly, creating artifact instead"
                       echo "committed=false" >> $GITHUB_OUTPUT
                     }
-                    
+
                     echo "committed=true" >> $GITHUB_OUTPUT
                     echo "✅ Diagrams committed to repository as versioned artifacts"
                   fi
@@ -844,7 +843,7 @@ PYTHON_COUNT
         name: 🔍 AI PR Review
         continue-on-error: true
         if: github.event_name == 'pull_request' || (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@gemini-cli /review'))
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-lates
         permissions:
             contents: read
             pull-requests: write
@@ -876,40 +875,43 @@ PYTHON_COUNT
                   import os
                   try:
                       import google.generativeai as genai
-                      
+
                       api_key = os.environ.get('GOOGLE_API_KEY')
                       if not api_key:
                           print("⚠️  GOOGLE_API_KEY not set")
                           exit(0)
-                      
+
                       genai.configure(api_key=api_key)
-                      model = genai.GenerativeModel('gemini-2.0-flash-exp')
-                      
+                      model = genai.GenerativeModel('gemini-1.5-flash-latest')
+
                       # Read diff
                       with open('pr.diff', 'r') as f:
                           diff = f.read()
-                      
+
                       prompt = f"""Review this Terraform/Infrastructure code PR:
 
-                  {diff[:8000]}  # Limit context
-                  
+                  {diff[:8000]}  # Limit contex
+
                   Analyze for:
                   1. Terraform best practices
                   2. GCP resource configuration
                   3. Security concerns
                   4. Test coverage
                   5. Code quality
-                  
+
                   Provide 3-5 specific, actionable suggestions."""
-                      
-                      response = model.generate_content(prompt)
+
+                      response = model.generate_content(prompt, generation_config=genai.types.GenerationConfig(
+                          temperature=0.2,
+                          max_output_tokens=8192
+                      ))
                       print("\n📋 AI Review:\n")
                       print(response.text)
-                      
-                      # Save for PR comment
+
+                      # Save for PR commen
                       with open('review.txt', 'w') as f:
                           f.write(response.text)
-                      
+
                   except ImportError:
                       print("⚠️  Install google-generativeai: pip install google-generativeai")
                   except Exception as e:
@@ -923,7 +925,7 @@ PYTHON_COUNT
                   script: |
                       const fs = require('fs');
                       const review = fs.readFileSync('review.txt', 'utf8');
-                      
+
                       github.rest.issues.createComment({
                         issue_number: context.issue.number,
                         owner: context.repo.owner,
@@ -932,9 +934,9 @@ PYTHON_COUNT
                       });
 
     gemini-assistant:
-        name: 💬 Gemini Assistant
+        name: 💬 Gemini Assistan
         if: contains(github.event.comment.body, '@gemini-cli') && !contains(github.event.comment.body, '/review')
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-lates
         permissions:
             contents: read
             pull-requests: write
@@ -949,11 +951,11 @@ PYTHON_COUNT
                   QUESTION=$(echo "$COMMENT" | sed "s/'//g" | sed 's/@gemini-cli//g' | sed 's/\/[a-z-]*//g' | xargs)
                   echo "question=$QUESTION" >> $GITHUB_OUTPUT
 
-            - name: Get context
-              id: context
+            - name: Get contex
+              id: contex
               run: |
-                  # Get relevant files for context
-                  find . -name "*.tf" -o -name "*.py" -o -name "*.yml" | head -20 > context_files.txt
+                  # Get relevant files for contex
+                  find . -name "*.tf" -o -name "*.py" -o -name "*.yml" | head -20 > context_files.tx
                   echo "Context files gathered"
 
             - name: Ask Gemini
@@ -965,46 +967,49 @@ PYTHON_COUNT
                   import os
                   try:
                       import google.generativeai as genai
-                      
+
                       api_key = os.environ.get('GOOGLE_API_KEY')
                       if not api_key:
                           print("⚠️  GOOGLE_API_KEY not set")
                           exit(0)
-                      
+
                       genai.configure(api_key=api_key)
-                      model = genai.GenerativeModel('gemini-2.0-flash-exp')
-                      
+                      model = genai.GenerativeModel('gemini-1.5-flash-latest')
+
                       question = os.environ.get('QUESTION', '')
-                      
-                      # Build context
+
+                      # Build contex
                       context = "This is a Terraform IaC-to-Visual converter project with AI self-healing."
-                      
+
                       prompt = f"""Context: {context}
-                  
+
                   Question: {question}
-                  
+
                   Provide a helpful, specific answer."""
-                      
-                      response = model.generate_content(prompt)
+
+                      response = model.generate_content(prompt, generation_config=genai.types.GenerationConfig(
+                          temperature=0.7,
+                          max_output_tokens=8192
+                      ))
                       print(response.text)
-                      
+
                       with open('answer.txt', 'w') as f:
                           f.write(response.text)
-                      
+
                   except ImportError:
                       print("Install: pip install google-generativeai")
                   except Exception as e:
                       print(f"Error: {e}")
                   PYTHON_SCRIPT
 
-            - name: Reply to comment
+            - name: Reply to commen
               if: hashFiles('answer.txt') != ''
               uses: actions/github-script@v7
               with:
                   script: |
                       const fs = require('fs');
                       const answer = fs.readFileSync('answer.txt', 'utf8');
-                      
+
                       github.rest.issues.createComment({
                         issue_number: context.issue.number,
                         owner: context.repo.owner,
@@ -1015,7 +1020,7 @@ PYTHON_COUNT
     cleanup-resources:
         name: 🧹 Cleanup Resources - ${{ matrix.stack }}
         needs: [detect-changes, validate-and-plan, generate-diagrams]
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-lates
         if: always()
         strategy:
             matrix:
@@ -1055,7 +1060,7 @@ PYTHON_COUNT
                   TF_STATE_BUCKET: ${{ secrets.TF_STATE_BUCKET || 'terraform-state-iac-to-visual' }}
               run: |
                   echo "🧹 Cleaning up any created resources..."
-                  
+
                   # Configure backend
                   cat > backend.tf << EOF
                   terraform {
@@ -1065,21 +1070,21 @@ PYTHON_COUNT
                     }
                   }
                   EOF
-                  
+
                   # Initialize
-                  terraform init
-                  
+                  terraform ini
+
                   # Force unlock if needed
                   echo "🔓 Checking for state locks..."
                   # terraform force-unlock -force <lock-id> || echo "No lock to release"
-                  
+
                   # Destroy all resources
                   echo "💥 Destroying resources (if any exist)..."
-                  terraform destroy \
-                    -var="project_id=${{ secrets.GCP_PROJECT_ID || 'demo-project-12345' }}" \
-                    -var="environment=dev" \
+                  terraform destroy
+                    -var="project_id=${{ secrets.GCP_PROJECT_ID || 'demo-project-12345' }}"
+                    -var="environment=dev"
                     -auto-approve || echo "⚠️  Destroy completed with warnings"
-                  
+
                   echo "✅ Cleanup complete"
 
             - name: Skip Cleanup
@@ -1096,7 +1101,7 @@ PYTHON_COUNT
     publish-results:
         name: 📊 Publish Results
         needs: [detect-changes, validate-and-plan, generate-tests, run-tests, mock-terraform-apply, generate-diagrams, cleanup-resources]
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-lates
         if: always() && github.event_name != 'issue_comment'
         steps:
             - uses: actions/checkout@v4
@@ -1121,7 +1126,7 @@ PYTHON_COUNT
               run: |
                   mkdir -p artifacts demo-bundle
                   BUNDLE_CREATED=0
-                  
+
                   for diagrams_dir in artifacts/diagrams-*; do
                       if [ ! -d "$diagrams_dir" ]; then
                           continue
@@ -1130,9 +1135,9 @@ PYTHON_COUNT
                       BUNDLE_CREATED=1
                       dest="demo-bundle/$stack"
                       mkdir -p "$dest"
-                      
+
                       cp -R "$diagrams_dir" "$dest/diagrams"
-                      
+
                       if [ -d "artifacts/coverage-$stack" ]; then
                           mkdir -p "$dest/coverage"
                           cp -R artifacts/coverage-$stack/. "$dest/coverage/"
@@ -1141,13 +1146,13 @@ PYTHON_COUNT
                               echo "Coverage: ${TOTAL:-unknown}" > "$dest/coverage/coverage-summary.txt"
                           fi
                       fi
-                      
+
                       if [ -d "artifacts/tests-$stack" ]; then
                           mkdir -p "$dest/tests"
                           cp -R artifacts/tests-$stack/. "$dest/tests/"
                       fi
                   done
-                  
+
                   if [ "$BUNDLE_CREATED" -eq 1 ]; then
                     python3 -c 'from pathlib import Path; Path("demo-bundle/README.md").write_text("\n".join(["# Demo Bundle Contents", "", "This package contains pre-built assets for showcasing the Terraform GCS POC:", "", "- Diagrams rendered from Terraform state (Mermaid `.mmd` and Markdown).", "- Generated Terratest suites that align with the demo stack.", "- Coverage reports with summarized totals.", "", "Each stack has its own subdirectory under this bundle. Unpack and open `diagrams/ARCHITECTURE.md` or `coverage/coverage.html` to walk stakeholders through the results."]) + "\n")'
                     tar -czf demo-bundle.tar.gz -C demo-bundle .
@@ -1178,20 +1183,20 @@ PYTHON_COUNT
                   echo "" >> $GITHUB_STEP_SUMMARY
                   echo "## 📈 Stage Results" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
-                  
+
                   # Check job statuses
                   if [ "${{ needs.validate-and-plan.result }}" = "success" ]; then
                     echo "- ✅ Terraform validation passed" >> $GITHUB_STEP_SUMMARY
                   else
                     echo "- ⚠️  Terraform validation completed with warnings" >> $GITHUB_STEP_SUMMARY
                   fi
-                  
+
                   if [ "${{ needs.generate-tests.result }}" = "success" ]; then
                     echo "- ✅ Tests generated successfully" >> $GITHUB_STEP_SUMMARY
                   else
                     echo "- ⚠️  Test generation completed with warnings" >> $GITHUB_STEP_SUMMARY
                   fi
-                  
+
                   if [ "${{ needs.run-tests.result }}" = "success" ]; then
                     echo "- ✅ Tests executed and healed" >> $GITHUB_STEP_SUMMARY
                   else
@@ -1204,23 +1209,23 @@ PYTHON_COUNT
                   if [ -n "${{ needs.run-tests.outputs.coverage }}" ]; then
                     echo "  - 📊 Coverage: ${{ needs.run-tests.outputs.coverage }}% (threshold ${THRESHOLD}%)" >> $GITHUB_STEP_SUMMARY
                   fi
-                  
+
                   if [ "${{ needs.mock-terraform-apply.result }}" = "success" ]; then
                     echo "- ✅ ${MODE_LABEL} completed" >> $GITHUB_STEP_SUMMARY
                   else
                     echo "- ⚠️  ${MODE_LABEL} had issues" >> $GITHUB_STEP_SUMMARY
                   fi
-                  
+
                   if [ "${{ needs.generate-diagrams.result }}" = "success" ]; then
                     echo "- ✅ Architecture diagrams generated and committed" >> $GITHUB_STEP_SUMMARY
                   else
                     echo "- ⚠️  Diagram generation completed" >> $GITHUB_STEP_SUMMARY
                   fi
-                  
+
                   echo "" >> $GITHUB_STEP_SUMMARY
                   echo "## 🤖 AI Self-Healing" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
-                  
+
                   if [ "${{ github.event.inputs.enable_self_heal }}" != "false" ]; then
                     echo "- ✅ Gemini self-healing enabled" >> $GITHUB_STEP_SUMMARY
                     echo "- 🔧 Auto-fixes applied for formatting" >> $GITHUB_STEP_SUMMARY
@@ -1229,11 +1234,11 @@ PYTHON_COUNT
                   else
                     echo "- ⏸️  Self-healing disabled for this run" >> $GITHUB_STEP_SUMMARY
                   fi
-                  
+
                   echo "" >> $GITHUB_STEP_SUMMARY
                   echo "## 📁 Generated Artifacts" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
-                  
+
                   # List artifacts
                   if [ -d "artifacts/" ]; then
                     ARTIFACT_COUNT=$(find artifacts/ -type f | wc -l)
@@ -1246,7 +1251,7 @@ PYTHON_COUNT
                       echo "- 🎁 Demo bundle (diagrams + coverage + tests)" >> $GITHUB_STEP_SUMMARY
                     fi
                   fi
-                  
+
                   echo "" >> $GITHUB_STEP_SUMMARY
                   echo "## 🔗 Quick Links" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
