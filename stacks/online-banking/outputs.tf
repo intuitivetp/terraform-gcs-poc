@@ -38,6 +38,16 @@ output "monitoring_dashboard_url" {
   value       = module.monitoring.dashboard_url
 }
 
+output "analytics_dataset_id" {
+  description = "BigQuery analytics dataset ID"
+  value       = module.analytics.dataset_id
+}
+
+output "analytics_function_url" {
+  description = "Analytics event processor function URL"
+  value       = module.analytics.function_url
+}
+
 output "stack_metadata" {
   description = "Metadata about the deployed stack"
   value = {

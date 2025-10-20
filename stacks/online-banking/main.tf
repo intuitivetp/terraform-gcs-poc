@@ -42,6 +42,9 @@ resource "google_project_service" "required_apis" {
     "cloudresourcemanager.googleapis.com",
     "iam.googleapis.com",
     "compute.googleapis.com",
+    "bigquery.googleapis.com",
+    "cloudfunctions.googleapis.com",
+    "cloudbuild.googleapis.com",
   ])
 
   service            = each.value
@@ -105,6 +108,21 @@ module "monitoring" {
   project_id  = var.project_id
   environment = var.environment
   labels      = local.common_labels
+
+  depends_on = [google_project_service.required_apis]
+}
+
+# Analytics: User behavior tracking
+module "analytics" {
+  source = "./modules/analytics"
+
+  project_id  = var.project_id
+  environment = var.environment
+  region      = var.region
+  labels      = local.common_labels
+
+  frontend_bucket = module.frontend.bucket_name
+  backend_service = module.backend.service_url
 
   depends_on = [google_project_service.required_apis]
 }
