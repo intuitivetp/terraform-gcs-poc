@@ -70,7 +70,7 @@ jobs:
                     CHANGED_FILES="stacks/online-banking"
                   fi
                   export CHANGED_FILES
-STACKS=$(python3 <<'PY'
+                  STACKS=$(python3 <<'PY'
 import json
 import os
 
@@ -90,8 +90,8 @@ if any(path.startswith("stacks/wealth-management/") for path in files):
 stacks = sorted(set(stacks))
 print(json.dumps(stacks, separators=(",", ":")), end="")
 PY
-)
-STACKS=${STACKS//$'\n'/}
+                  )
+                  STACKS=${STACKS//$'\n'/}
                   if [ -z "$STACKS" ] || [ "$STACKS" = "[]" ]; then
                     STACKS='["online-banking"]'
                   fi
