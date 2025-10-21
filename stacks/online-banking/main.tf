@@ -45,6 +45,7 @@ resource "google_project_service" "required_apis" {
     "bigquery.googleapis.com",
     "cloudfunctions.googleapis.com",
     "cloudbuild.googleapis.com",
+    "secretmanager.googleapis.com",
   ])
 
   service            = each.value
@@ -127,3 +128,13 @@ module "analytics" {
   depends_on = [google_project_service.required_apis]
 }
 
+# Security: Secret management and access control
+module "security" {
+  source = "./modules/security"
+
+  project_id  = var.project_id
+  environment = var.environment
+  labels      = local.common_labels
+
+  depends_on = [google_project_service.required_apis]
+}
