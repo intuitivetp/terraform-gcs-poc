@@ -48,6 +48,21 @@ output "analytics_function_url" {
   value       = module.analytics.function_url
 }
 
+output "secrets_accessor_email" {
+  description = "Service account email for accessing secrets"
+  value       = module.security.secrets_accessor_email
+}
+
+output "db_password_secret_id" {
+  description = "ID of the database password secret in Secret Manager"
+  value       = module.security.db_password_secret_id
+}
+
+output "api_key_secret_id" {
+  description = "ID of the API key secret in Secret Manager"
+  value       = module.security.api_key_secret_id
+}
+
 output "stack_metadata" {
   description = "Metadata about the deployed stack"
   value = {
@@ -57,4 +72,3 @@ output "stack_metadata" {
     deployed_at = timestamp()
   }
 }
-
